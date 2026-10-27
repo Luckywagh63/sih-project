@@ -69,10 +69,21 @@ app = FastAPI(
     description="Production-grade REST API for AICTE Approval Automation with MongoDB Atlas, Automated Email Notifications, JWT RBAC, and Document Compliance."
 )
 
-origins = [x.strip() for x in os.getenv("FRONTEND_ORIGIN", "http://localhost:3000").split(",") if x.strip()]
+raw_origins = os.getenv("FRONTEND_ORIGIN", "*").split(",")
+origins = [x.strip().rstrip("/") for x in raw_origins if x.strip() and x.strip() != "*"]
+
+for default_origin in [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "https://sih-project-eight-beige.vercel.app"
+]:
+    if default_origin not in origins:
+        origins.append(default_origin)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins + ["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_origins=origins,
+    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
