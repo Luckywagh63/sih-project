@@ -1,4 +1,4 @@
-const API = (process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000").replace(/\/$/, "");
+const API = (process.env.NEXT_PUBLIC_API_URL || "https://sih-project-8bcg.onrender.com").replace(/\/$/, "");
 
 function getStoredToken() {
   if (typeof window !== "undefined") {
