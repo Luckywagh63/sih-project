@@ -16,7 +16,9 @@ import {
   Sparkles,
   CheckCircle2,
   AlertCircle,
-  Shield
+  Shield,
+  Menu,
+  X
 } from "lucide-react";
 
 import DashboardView from "../components/DashboardView";
@@ -38,6 +40,9 @@ export default function Home() {
   const [error, setError] = useState("");
   const [toast, setToast] = useState("");
   const [refreshKey, setRefreshKey] = useState(0);
+
+  // Mobile drawer state
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Authentication State
   const [currentUser, setCurrentUser] = useState(null);
@@ -84,7 +89,7 @@ export default function Home() {
       setError("");
     } catch (err) {
       setConnected(false);
-      setError(`Cannot connect to backend: ${err.message}. Ensure FastAPI server is running on http://127.0.0.1:8000.`);
+      setError(`Cannot connect to backend: ${err.message}. Ensure FastAPI server is running.`);
     } finally {
       setLoading(false);
     }
@@ -134,17 +139,34 @@ export default function Home() {
 
   return (
     <div className="shell">
-      {/* Sidebar */}
-      <aside className="sidebar">
+      {/* Mobile Drawer Overlay */}
+      {sidebarOpen && (
+        <div
+          className="sidebar-overlay"
+          onClick={() => setSidebarOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      {/* Sidebar Navigation */}
+      <aside className={`sidebar ${sidebarOpen ? "open" : ""}`}>
         {/* Brand Header */}
         <div className="brand">
           <div className="brand-icon">
             <Shield size={22} strokeWidth={2.4} />
           </div>
-          <div>
+          <div style={{ flex: 1, minWidth: 0 }}>
             <b>aicte<span style={{ color: "#60a5fa" }}>flow</span></b>
             <small>STATUTORY APPROVAL BUREAU</small>
           </div>
+          <button
+            type="button"
+            className="sidebar-close-btn"
+            onClick={() => setSidebarOpen(false)}
+            aria-label="Close navigation"
+          >
+            <X size={18} />
+          </button>
         </div>
 
         {/* Workspace Card */}
@@ -175,7 +197,10 @@ export default function Home() {
                 <button
                   key={item.id}
                   className={`nav-item ${isActive ? "active" : ""}`}
-                  onClick={() => setNav(item.id)}
+                  onClick={() => {
+                    setNav(item.id);
+                    setSidebarOpen(false);
+                  }}
                 >
                   <div className="nav-item-inner">
                     <IconComponent size={16} strokeWidth={isActive ? 2.2 : 1.8} />
@@ -242,7 +267,10 @@ export default function Home() {
                 type="button"
                 className="btn primary"
                 style={{ width: "100%", fontSize: 12, padding: "10px" }}
-                onClick={() => setIsAuthOpen(true)}
+                onClick={() => {
+                  setIsAuthOpen(true);
+                  setSidebarOpen(false);
+                }}
               >
                 <LogIn size={15} />
                 Sign In / Switch Role
@@ -260,31 +288,49 @@ export default function Home() {
         {/* Topbar */}
         <header className="topbar">
           <div className="topbar-left">
-            <span className="breadcrumb-tag">AICTE Portal</span>
-            <ChevronRight size={14} color="#94a3b8" />
-            <span className="breadcrumb-current">{nav}</span>
+            <button
+              type="button"
+              className="mobile-menu-btn"
+              onClick={() => setSidebarOpen(true)}
+              aria-label="Open menu"
+            >
+              <Menu size={20} />
+            </button>
+
+            <div className="topbar-brand-mobile">
+              <Shield size={18} color="#2563eb" />
+              <span>aicte<b style={{ color: "#2563eb" }}>flow</b></span>
+            </div>
+
+            <div className="breadcrumb-nav">
+              <span className="breadcrumb-tag">AICTE Portal</span>
+              <ChevronRight size={14} color="#94a3b8" />
+              <span className="breadcrumb-current">{nav}</span>
+            </div>
           </div>
 
           <div className="topbar-right">
             {/* MongoDB Connection Status Indicator */}
             <span className={`tag ${connected ? "success" : "danger"}`}>
               <span className={`pulse-dot ${connected ? "online" : "offline"}`} />
-              {connected ? "MONGODB ATLAS CONNECTED" : "BACKEND OFFLINE"}
+              <span className="tag-text-desktop">{connected ? "MONGODB ATLAS CONNECTED" : "BACKEND OFFLINE"}</span>
+              <span className="tag-text-mobile">{connected ? "CONNECTED" : "OFFLINE"}</span>
             </span>
 
             {/* Quick File Action */}
             <button
-              className="btn primary"
+              className="btn primary topbar-action-btn"
               onClick={() => setIsCreateOpen(true)}
-              style={{ padding: "8px 14px" }}
             >
               <Plus size={15} strokeWidth={2.4} />
-              <span>File Application</span>
+              <span className="btn-text-desktop">File Application</span>
+              <span className="btn-text-mobile">New</span>
             </button>
 
             {/* Auth Profile Pill */}
             {currentUser ? (
               <div
+                className="topbar-user-pill"
                 style={{
                   display: "flex",
                   alignItems: "center",
@@ -310,13 +356,13 @@ export default function Home() {
                 >
                   {currentUser.name ? currentUser.name.charAt(0).toUpperCase() : "U"}
                 </div>
-                <span style={{ fontSize: 12, fontWeight: 600, color: "#1e293b" }}>
+                <span className="topbar-user-name" style={{ fontSize: 12, fontWeight: 600, color: "#1e293b" }}>
                   {currentUser.name}
                 </span>
                 <span
                   className={`status ${
                     currentUser.role === "Administrator" ? "red" : currentUser.role === "Reviewer" ? "blue" : "green"
-                  }`}
+                  } topbar-user-role`}
                   style={{ padding: "2px 8px", fontSize: 10 }}
                 >
                   {currentUser.role}
@@ -329,7 +375,8 @@ export default function Home() {
                 style={{ padding: "8px 14px" }}
               >
                 <LogIn size={14} />
-                Sign In
+                <span className="btn-text-desktop">Sign In</span>
+                <span className="btn-text-mobile">Login</span>
               </button>
             )}
           </div>

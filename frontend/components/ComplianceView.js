@@ -75,12 +75,12 @@ export default function ComplianceView({ onSelectApp }) {
             <p>Scans mandatory statutory attachments, institutional IDs, and regulatory completeness.</p>
           </div>
           {apps.length > 0 && (
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", width: "100%", marginTop: 8 }}>
               <label style={{ fontSize: 12, fontWeight: 700, color: "#334155" }}>Target Application:</label>
               <select
                 value={selectedAppId}
                 onChange={handleSelectChange}
-                style={{ fontSize: 12, padding: "8px 14px", minWidth: 260 }}
+                style={{ fontSize: 12, padding: "8px 14px", flex: "1 1 200px", minWidth: 0 }}
               >
                 {apps.map((a) => (
                   <option key={a.id} value={a.id}>
