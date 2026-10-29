@@ -8,7 +8,10 @@ import {
   Send,
   AlertCircle,
   Shield,
-  CheckCircle2
+  CheckCircle2,
+  Phone,
+  Mail,
+  MapPin
 } from "lucide-react";
 
 const APPLICATION_TYPES = [
@@ -74,17 +77,18 @@ export default function CreateApplicationModal({ isOpen, onClose, onCreated, cur
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="modal" style={{ maxWidth: 680 }}>
+      <div className="modal" style={{ maxWidth: 700 }}>
+        {/* Header */}
         <div className="modal-head">
           <div>
             <div className="eyebrow">
-              <Building2 size={14} />
-              <span>Statutory Filing Service</span>
+              <Building2 size={13} />
+              <span>STATUTORY APPROVAL FILING SERVICE</span>
             </div>
-            <h2>File AICTE Application</h2>
-            <p>Initiate statutory approval process with automated workflow & SMS tracking</p>
+            <h2>File AICTE Statutory Application</h2>
+            <p>Initiate regulatory approval workflow with automated tracking & compliance surveillance</p>
           </div>
-          <button className="modal-close-btn" onClick={onClose}>
+          <button className="modal-close-btn" onClick={onClose} aria-label="Close modal">
             <X size={16} />
           </button>
         </div>
@@ -99,7 +103,7 @@ export default function CreateApplicationModal({ isOpen, onClose, onCreated, cur
         <form onSubmit={handleSubmit}>
           <div className="detail-grid">
             <label>
-              Institution Legal Name *
+              Institution Legal Entity Name *
               <input
                 required
                 value={institution}
@@ -108,7 +112,7 @@ export default function CreateApplicationModal({ isOpen, onClose, onCreated, cur
               />
             </label>
             <label>
-              AICTE / State Institution ID *
+              AICTE Permanent Institute ID *
               <input
                 required
                 value={institutionId}
@@ -119,7 +123,7 @@ export default function CreateApplicationModal({ isOpen, onClose, onCreated, cur
           </div>
 
           <label>
-            Application Type *
+            Statutory Approval Category *
             <select value={type} onChange={(e) => setType(e.target.value)}>
               {APPLICATION_TYPES.map((t) => (
                 <option key={t} value={t}>{t}</option>
@@ -129,7 +133,7 @@ export default function CreateApplicationModal({ isOpen, onClose, onCreated, cur
 
           <div className="detail-grid">
             <label>
-              Authorized Contact Person *
+              Authorized Contact Person Name *
               <input
                 required
                 value={contactName}
@@ -138,7 +142,7 @@ export default function CreateApplicationModal({ isOpen, onClose, onCreated, cur
               />
             </label>
             <label>
-              Official Contact Email *
+              Official Institutional Email *
               <input
                 type="email"
                 required
@@ -150,7 +154,7 @@ export default function CreateApplicationModal({ isOpen, onClose, onCreated, cur
           </div>
 
           <label>
-            Mobile Number (E.164 format with country code) *
+            Contact Mobile Number (International E.164 format with country code) *
             <input
               type="tel"
               required
@@ -175,7 +179,7 @@ export default function CreateApplicationModal({ isOpen, onClose, onCreated, cur
           </label>
 
           <label>
-            Initial Notes / Particulars (optional)
+            Institutional Notes / Approval Particulars (optional)
             <textarea
               rows="2"
               maxLength="2000"

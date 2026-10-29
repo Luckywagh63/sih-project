@@ -18,7 +18,9 @@ import {
   AlertCircle,
   Shield,
   Menu,
-  X
+  X,
+  Search,
+  ExternalLink
 } from "lucide-react";
 
 import DashboardView from "../components/DashboardView";
@@ -41,8 +43,31 @@ export default function Home() {
   const [toast, setToast] = useState("");
   const [refreshKey, setRefreshKey] = useState(0);
 
-  // Mobile drawer state
+  // On-demand slide drawer state ("Come and go")
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Permanent Statutory Color Theme: Tiranga Executive
+  const theme = "tiranga";
+
+  useEffect(() => {
+    localStorage.setItem("aicte_portal_theme", "tiranga");
+    document.documentElement.setAttribute("data-theme", "tiranga");
+  }, []);
+
+  // Keyboard shortcut listener: Ctrl+B or Cmd+B to toggle sidebar; Escape to close
+  useEffect(() => {
+    function handleKeyDown(e) {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "b") {
+        e.preventDefault();
+        setSidebarOpen((prev) => !prev);
+      }
+      if (e.key === "Escape" && sidebarOpen) {
+        setSidebarOpen(false);
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [sidebarOpen]);
 
   // Authentication State
   const [currentUser, setCurrentUser] = useState(null);
@@ -106,6 +131,18 @@ export default function Home() {
     setRefreshKey((k) => k + 1);
   }
 
+  async function handleQuickLogin(email, password) {
+    try {
+      const res = await api.login(email, password);
+      setStoredAuth(res.token, res.user);
+      setCurrentUser(res.user);
+      notify(`Session switched to ${res.user.name} (${res.user.role})`);
+      setRefreshKey((k) => k + 1);
+    } catch (err) {
+      notify(`Switch failed: ${err.message}`);
+    }
+  }
+
   function handleAppCreated(created) {
     notify(`Application ${created.id} successfully created and registered!`);
     setRefreshKey((k) => k + 1);
@@ -125,7 +162,7 @@ export default function Home() {
       group: "REGULATORY INTELLIGENCE",
       items: [
         { id: "AI compliance", label: "Document Compliance", icon: ShieldCheck },
-        { id: "Notifications", label: "Email Dispatch Audit", icon: Mail }
+        { id: "Notifications", label: "Dispatch & Email Audit", icon: Mail }
       ]
     },
     {
@@ -138,11 +175,11 @@ export default function Home() {
   ];
 
   return (
-    <div className="shell">
-      {/* Mobile Drawer Overlay */}
+    <div className="shell" data-theme={theme}>
+      {/* On-Demand Slide Drawer Overlay ("Come and Go") */}
       {sidebarOpen && (
         <div
-          className="sidebar-overlay"
+          className="sidebar-overlay active"
           onClick={() => setSidebarOpen(false)}
           aria-hidden="true"
         />
@@ -156,7 +193,7 @@ export default function Home() {
             <Shield size={22} strokeWidth={2.4} />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <b>aicte<span style={{ color: "#60a5fa" }}>flow</span></b>
+            <b>aicte<span style={{ color: "var(--primary)" }}>flow</span></b>
             <small>STATUTORY APPROVAL BUREAU</small>
           </div>
           <button
@@ -164,6 +201,7 @@ export default function Home() {
             className="sidebar-close-btn"
             onClick={() => setSidebarOpen(false)}
             aria-label="Close navigation"
+            title="Close drawer (Esc)"
           >
             <X size={18} />
           </button>
@@ -172,13 +210,13 @@ export default function Home() {
         {/* Workspace Card */}
         <div className="workspace">
           <div className="ws-title">
-            <Building2 size={16} color="#60a5fa" />
+            <Building2 size={16} color="var(--primary)" />
             <span>AICTE HQ Bureau</span>
           </div>
           <small>
             {currentUser ? (
-              <span style={{ color: "#93c5fd", fontWeight: 600 }}>
-                ● {currentUser.role} Scope
+              <span style={{ color: "var(--primary)", fontWeight: 700 }}>
+                ● {currentUser.role} Active
               </span>
             ) : (
               "Public Access Portal"
@@ -222,25 +260,26 @@ export default function Home() {
           {currentUser ? (
             <div className="user-card-mini">
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
                   <div
                     style={{
-                      width: 28,
-                      height: 28,
+                      width: 32,
+                      height: 32,
                       borderRadius: "50%",
                       background: "linear-gradient(135deg, #3b82f6, #6366f1)",
                       display: "grid",
                       placeItems: "center",
-                      fontWeight: 700,
+                      fontWeight: 800,
                       fontSize: 12,
-                      color: "#fff"
+                      color: "#fff",
+                      boxShadow: "0 2px 8px rgba(37, 99, 235, 0.4)"
                     }}
                   >
                     {currentUser.name ? currentUser.name.charAt(0).toUpperCase() : "U"}
                   </div>
                   <div>
-                    <div style={{ fontWeight: 600, fontSize: 12, color: "#fff" }}>{currentUser.name}</div>
-                    <div style={{ fontSize: 10, color: "#94a3b8" }}>{currentUser.role}</div>
+                    <div style={{ fontWeight: 700, fontSize: 12.5, color: "#fff", lineHeight: 1.2 }}>{currentUser.name}</div>
+                    <div style={{ fontSize: 10.5, color: "#94a3b8", marginTop: 2 }}>{currentUser.role}</div>
                   </div>
                 </div>
                 <button
@@ -249,12 +288,13 @@ export default function Home() {
                   title="Sign out"
                   style={{
                     background: "rgba(255,255,255,0.06)",
-                    border: "1px solid rgba(255,255,255,0.1)",
-                    borderRadius: 6,
-                    padding: "5px 7px",
+                    border: "1px solid rgba(255,255,255,0.12)",
+                    borderRadius: 8,
+                    padding: "6px 8px",
                     color: "#cbd5e1",
                     display: "flex",
-                    alignItems: "center"
+                    alignItems: "center",
+                    cursor: "pointer"
                   }}
                 >
                   <LogOut size={13} />
@@ -266,17 +306,17 @@ export default function Home() {
               <button
                 type="button"
                 className="btn primary"
-                style={{ width: "100%", fontSize: 12, padding: "10px" }}
+                style={{ width: "100%", fontSize: 12.5, padding: "10px" }}
                 onClick={() => {
                   setIsAuthOpen(true);
                   setSidebarOpen(false);
                 }}
               >
                 <LogIn size={15} />
-                Sign In / Switch Role
+                <span>Sign In / Switch Role</span>
               </button>
               <small style={{ textAlign: "center", marginTop: 6, display: "block" }}>
-                Demo credentials available
+                1-Click Demo Personas Available
               </small>
             </div>
           )}
@@ -288,23 +328,31 @@ export default function Home() {
         {/* Topbar */}
         <header className="topbar">
           <div className="topbar-left">
+            {/* Sidebar On-Demand Toggle ("Come and Go") */}
             <button
               type="button"
-              className="mobile-menu-btn"
-              onClick={() => setSidebarOpen(true)}
-              aria-label="Open menu"
+              className="sidebar-toggle-btn"
+              onClick={() => setSidebarOpen((prev) => !prev)}
+              aria-label="Toggle Navigation Drawer"
+              title="Toggle Navigation (Ctrl+B)"
             >
-              <Menu size={20} />
+              <Menu size={18} strokeWidth={2.2} />
+              <span className="sidebar-toggle-text">Menu</span>
             </button>
 
-            <div className="topbar-brand-mobile">
-              <Shield size={18} color="#2563eb" />
-              <span>aicte<b style={{ color: "#2563eb" }}>flow</b></span>
+            {/* Portal Brand Emblem */}
+            <div className="topbar-brand">
+              <div className="topbar-brand-icon">
+                <Shield size={16} strokeWidth={2.4} />
+              </div>
+              <span className="topbar-brand-name">
+                aicte<span style={{ color: "var(--primary)" }}>flow</span>
+              </span>
+              <span className="topbar-brand-badge">STATUTORY</span>
             </div>
 
             <div className="breadcrumb-nav">
-              <span className="breadcrumb-tag">AICTE Portal</span>
-              <ChevronRight size={14} color="#94a3b8" />
+              <ChevronRight size={14} color="var(--muted-light)" />
               <span className="breadcrumb-current">{nav}</span>
             </div>
           </div>
@@ -335,20 +383,20 @@ export default function Home() {
                   display: "flex",
                   alignItems: "center",
                   gap: 8,
-                  padding: "4px 10px 4px 6px",
-                  borderRadius: 20,
-                  background: "#f1f5f9",
+                  padding: "4px 12px 4px 6px",
+                  borderRadius: 24,
+                  background: "var(--panel-card)",
                   border: "1px solid var(--line)"
                 }}
               >
                 <div
                   style={{
-                    width: 24,
-                    height: 24,
+                    width: 26,
+                    height: 26,
                     borderRadius: "50%",
-                    background: "#2563eb",
+                    background: "var(--primary)",
                     color: "#fff",
-                    fontWeight: 700,
+                    fontWeight: 800,
                     fontSize: 11,
                     display: "grid",
                     placeItems: "center"
@@ -356,14 +404,14 @@ export default function Home() {
                 >
                   {currentUser.name ? currentUser.name.charAt(0).toUpperCase() : "U"}
                 </div>
-                <span className="topbar-user-name" style={{ fontSize: 12, fontWeight: 600, color: "#1e293b" }}>
+                <span className="topbar-user-name" style={{ fontSize: 12.5, fontWeight: 700, color: "var(--ink)" }}>
                   {currentUser.name}
                 </span>
                 <span
                   className={`status ${
                     currentUser.role === "Administrator" ? "red" : currentUser.role === "Reviewer" ? "blue" : "green"
                   } topbar-user-role`}
-                  style={{ padding: "2px 8px", fontSize: 10 }}
+                  style={{ padding: "2px 8px", fontSize: 10.5 }}
                 >
                   {currentUser.role}
                 </span>
@@ -391,6 +439,8 @@ export default function Home() {
               connected={connected}
               loading={loading}
               error={error}
+              currentUser={currentUser}
+              onQuickLogin={handleQuickLogin}
               onSelectApp={(id) => setSelectedAppId(id)}
               onNewApp={() => setIsCreateOpen(true)}
               onNavigate={(v) => setNav(v)}
@@ -440,11 +490,11 @@ export default function Home() {
           <footer className="footer">
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <Shield size={14} color="#64748b" />
-              <span>© 2026 All India Council for Technical Education (AICTE) · Approval Workflow Automation Platform</span>
+              <span>© 2026 All India Council for Technical Education (AICTE) · Statutory Approval Workflow Automation Platform</span>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-              <span>Database: <b>aicte_workflow</b> (MongoDB Atlas)</span>
-              <span>Backend API: <b>FastAPI v3.12</b></span>
+              <span>Cluster: <b>aicte_workflow</b> (MongoDB Atlas)</span>
+              <span>FastAPI Microservice: <b>v3.12 Engine</b></span>
             </div>
           </footer>
         </div>
@@ -484,27 +534,11 @@ export default function Home() {
 
       {/* Floating Modern Toast */}
       {toast && (
-        <div
-          style={{
-            position: "fixed",
-            bottom: 24,
-            right: 24,
-            background: "#0f172a",
-            color: "#ffffff",
-            padding: "14px 20px",
-            borderRadius: 14,
-            fontSize: 13,
-            boxShadow: "0 12px 35px rgba(0,0,0,0.25)",
-            zIndex: 1000,
-            borderLeft: "4px solid #3b82f6",
-            display: "flex",
-            alignItems: "center",
-            gap: 12,
-            animation: "fadeIn 0.2s ease"
-          }}
-        >
-          <Sparkles size={18} color="#60a5fa" />
-          <span>{toast}</span>
+        <div className="toast-container">
+          <div className="toast">
+            <Sparkles size={18} color="#60a5fa" style={{ flexShrink: 0 }} />
+            <span>{toast}</span>
+          </div>
         </div>
       )}
     </div>

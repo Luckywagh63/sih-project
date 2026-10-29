@@ -12,7 +12,11 @@ import {
   ChevronRight,
   Sparkles,
   Info,
-  X
+  X,
+  Clock,
+  CheckCheck,
+  Shield,
+  FileText
 } from "lucide-react";
 
 export default function NotificationsView() {
@@ -91,19 +95,21 @@ export default function NotificationsView() {
     }
   }
 
+  const pages = Math.max(1, Math.ceil(total / limit));
+
   return (
-    <div className="panel table-panel">
+    <div className="panel table-panel" style={{ animation: "fadeIn 0.25s ease" }}>
       {/* Header */}
       <div className="panel-head">
         <div>
           <div className="eyebrow">
-            <Mail size={14} />
-            <span>Statutory Notification Gateway</span>
+            <Mail size={13} />
+            <span>STATUTORY NOTIFICATION & DISPATCH GATEWAY</span>
           </div>
-          <h2>AICTE Email Status Notification Audit</h2>
-          <p>Real-time regulatory status emails dispatched to institutional applicant contacts</p>
+          <h2>AICTE Automated Status Notification Audit</h2>
+          <p>Real-time regulatory status emails and audit tracking dispatched to institutional applicant contacts</p>
         </div>
-        <button className="btn" onClick={load}>
+        <button className="btn" onClick={load} title="Refresh audit feed">
           <RefreshCw size={14} />
           <span>Refresh Logs</span>
         </button>
@@ -114,22 +120,23 @@ export default function NotificationsView() {
         style={{
           margin: "0 24px 20px",
           padding: "20px 24px",
-          background: "linear-gradient(135deg, #f8faff 0%, #f0f7ff 100%)",
+          background: "linear-gradient(135deg, #f8faff 0%, #eff6ff 100%)",
           borderRadius: 14,
-          border: "1px solid #dbeafe"
+          border: "1px solid #bfdbfe",
+          boxShadow: "0 2px 8px rgba(37, 99, 235, 0.04)"
         }}
       >
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8, flexWrap: "wrap", gap: 10 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <Sparkles size={16} color="#2563eb" />
-            <b style={{ fontSize: 13, color: "#1e293b" }}>Test Live Email Dispatch & Template Diagnostics</b>
+            <b style={{ fontSize: 13.5, color: "#1e3a8a" }}>Live Notification Dispatch & Template Diagnostics</b>
           </div>
           <span className={`status ${emailConfigured ? "green" : "blue"}`} style={{ fontSize: 11 }}>
-            {emailConfigured ? "Live SMTP Active" : "Audit / Dev Mode Active"}
+            {emailConfigured ? "Live SMTP Active" : "Audit / Dev Simulator Active"}
           </span>
         </div>
-        <p style={{ fontSize: 12, color: "var(--muted)", margin: "0 0 14px" }}>
-          Verify that AICTE-branded HTML status emails can be dispatched to any applicant email address.
+        <p style={{ fontSize: 12.5, color: "var(--muted)", margin: "0 0 14px" }}>
+          Verify that AICTE-branded HTML status emails are reliably generated and dispatched to institutional contacts.
         </p>
 
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
@@ -138,7 +145,7 @@ export default function NotificationsView() {
             value={testEmailAddress}
             onChange={(e) => setTestEmailAddress(e.target.value)}
             placeholder="principal@college.edu.in"
-            style={{ fontSize: 12, padding: "9px 14px", minWidth: 280 }}
+            style={{ fontSize: 13, padding: "9px 14px", minWidth: 290, flex: "1 1 290px" }}
           />
           <button
             type="button"
@@ -147,7 +154,7 @@ export default function NotificationsView() {
             disabled={dispatching || !testEmailAddress.trim()}
           >
             <Send size={14} />
-            <span>{dispatching ? "Dispatching…" : "Dispatch Test Email"}</span>
+            <span>{dispatching ? "Dispatching…" : "Dispatch Test Notification"}</span>
           </button>
         </div>
 
@@ -157,7 +164,7 @@ export default function NotificationsView() {
               marginTop: 12,
               padding: "10px 14px",
               borderRadius: 8,
-              fontSize: 12,
+              fontSize: 12.5,
               fontWeight: 500,
               display: "flex",
               alignItems: "center",
@@ -182,24 +189,24 @@ export default function NotificationsView() {
           </div>
         )}
 
-        <div style={{ marginTop: 14, paddingTop: 12, borderTop: "1px solid #e2e8f0", fontSize: 12, color: "#475569" }}>
-          <b>Key Advantages of Email Status Notifications:</b>
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: 8, marginTop: 8 }}>
+        <div style={{ marginTop: 14, paddingTop: 12, borderTop: "1px solid #dbeafe", fontSize: 12, color: "#475569" }}>
+          <b>Enterprise Gateway Highlights:</b>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 8, marginTop: 8 }}>
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
               <span style={{ color: "#059669", fontWeight: 700 }}>✓</span>
               <span>Zero Telecom Surcharges & Carrier Blocks</span>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
               <span style={{ color: "#059669", fontWeight: 700 }}>✓</span>
-              <span>Complete Scrutiny Notes & Details</span>
+              <span>Complete Scrutiny Remarks & Resolution</span>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
               <span style={{ color: "#059669", fontWeight: 700 }}>✓</span>
-              <span>Official AICTE Govt-Branded HTML</span>
+              <span>Govt-Approved Cryptographic Logging</span>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
               <span style={{ color: "#059669", fontWeight: 700 }}>✓</span>
-              <span>Standard SMTP / Gmail App Passwords</span>
+              <span>Standard SMTP / Twilio Integration</span>
             </div>
           </div>
         </div>
@@ -221,7 +228,7 @@ export default function NotificationsView() {
         >
           <option value="All">All statuses</option>
           <option value="delivered">Delivered (Live SMTP)</option>
-          <option value="delivered_dev_mode">Delivered (Audit / Dev Mode)</option>
+          <option value="delivered_dev_mode">Delivered (Audit / Dev Simulator)</option>
           <option value="failed">Failed</option>
         </select>
         <span style={{ fontSize: 12, color: "var(--muted)", marginLeft: "auto" }}>
@@ -236,10 +243,10 @@ export default function NotificationsView() {
             <tr>
               <th>NOTIFICATION ID</th>
               <th>APPLICATION ID</th>
-              <th>RECIPIENT</th>
+              <th>RECIPIENT EMAIL / CONTACT</th>
               <th>TRIGGER EVENT</th>
-              <th>STATUS</th>
-              <th style={{ minWidth: 260 }}>SUBJECT & MESSAGE CONTENT</th>
+              <th>GATEWAY STATUS</th>
+              <th style={{ minWidth: 260 }}>SUBJECT & BODY PREVIEW</th>
               <th>ACTIONS</th>
               <th>TIMESTAMP</th>
             </tr>
@@ -247,57 +254,74 @@ export default function NotificationsView() {
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan="8" className="loading">Loading email dispatch logs from MongoDB Atlas…</td>
+                <td colSpan="8" className="loading">
+                  <RefreshCw size={24} style={{ color: "#2563eb", animation: "spin 1s linear infinite" }} />
+                  <span>Loading dispatch logs from MongoDB Atlas…</span>
+                </td>
               </tr>
             ) : items.length > 0 ? (
               items.map((n) => (
                 <tr key={n.id}>
-                  <td><span className="app-id">{n.id}</span></td>
-                  <td><b>{n.application_id}</b></td>
                   <td>
-                    <span style={{ fontSize: 12, fontFamily: "monospace", color: "#1d4ed8", fontWeight: 600 }}>
-                      {n.recipient_email || n.recipient_phone || "—"}
-                    </span>
+                    <span className="app-id" style={{ fontSize: 11.5 }}>{n.id.slice(0, 10)}…</span>
                   </td>
                   <td>
-                    <span style={{ fontWeight: 600, color: "#334155" }}>{n.trigger_event}</span>
+                    <span style={{ fontWeight: 600, color: "#2563eb" }}>{n.application_id}</span>
+                  </td>
+                  <td>
+                    <div style={{ fontWeight: 600, color: "#1e293b" }}>{n.recipient}</div>
+                    <span className="sub">{n.contact_name || "Institutional Contact"}</span>
+                  </td>
+                  <td>
+                    <span
+                      style={{
+                        background: "#f1f5f9",
+                        padding: "3px 8px",
+                        borderRadius: 6,
+                        fontSize: 11.5,
+                        fontWeight: 600,
+                        color: "#334155"
+                      }}
+                    >
+                      {n.event}
+                    </span>
                   </td>
                   <td>
                     <span className={`status ${getStatusColor(n.status)}`}>
-                      {n.status === "delivered_dev_mode" ? "logged (dev)" : n.status}
+                      {n.status === "delivered_dev_mode" ? "DEV AUDIT" : n.status.toUpperCase()}
                     </span>
                   </td>
-                  <td style={{ maxWidth: 320, fontSize: 12, lineHeight: 1.4 }}>
-                    {n.subject && (
-                      <div style={{ fontWeight: 700, color: "#0f172a", marginBottom: 2 }}>
-                        {n.subject}
-                      </div>
-                    )}
-                    <div style={{ color: "#475569" }}>
+                  <td style={{ maxWidth: 300, whiteSpace: "normal" }}>
+                    <div style={{ fontWeight: 600, fontSize: 12.5, color: "var(--ink)", marginBottom: 2 }}>
+                      {n.subject || "AICTE Regulatory Notification"}
+                    </div>
+                    <div style={{ fontSize: 11.5, color: "#64748b", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                       {n.message}
                     </div>
                   </td>
                   <td>
-                    {n.message_html ? (
-                      <button
-                        className="btn"
-                        style={{ padding: "4px 10px", fontSize: 11 }}
-                        onClick={() => setPreviewEmail(n)}
-                      >
-                        <Eye size={13} />
-                        <span>Preview HTML</span>
-                      </button>
-                    ) : (
-                      <span style={{ color: "var(--muted)", fontSize: 11 }}>Text only</span>
-                    )}
+                    <button
+                      type="button"
+                      className="btn"
+                      style={{ padding: "5px 10px", fontSize: 11.5 }}
+                      onClick={() => setPreviewEmail(n)}
+                    >
+                      <Eye size={13} />
+                      <span>Inspect</span>
+                    </button>
                   </td>
-                  <td>{new Date(n.created_at).toLocaleString()}</td>
+                  <td>
+                    <div style={{ display: "flex", alignItems: "center", gap: 5, color: "#64748b", fontSize: 12 }}>
+                      <Clock size={13} />
+                      <span>{new Date(n.created_at).toLocaleString()}</span>
+                    </div>
+                  </td>
                 </tr>
               ))
             ) : (
               <tr>
                 <td colSpan="8" className="empty">
-                  No email notifications logged yet. Submitting or changing application statuses will trigger email dispatches.
+                  No email notification events found in database matching criteria.
                 </td>
               </tr>
             )}
@@ -305,24 +329,27 @@ export default function NotificationsView() {
         </table>
       </div>
 
+      {/* Table Pagination */}
       <div className="table-foot">
-        <span>Total notifications recorded: <b>{total}</b></span>
+        <span>Showing <b>{items.length}</b> of <b>{total}</b> total notification events</span>
         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
           <button
             className="btn"
             disabled={page <= 1}
             onClick={() => setPage((p) => Math.max(1, p - 1))}
-            style={{ padding: "6px 10px" }}
+            style={{ padding: "6px 12px" }}
           >
             <ChevronLeft size={14} />
-            <span>Prev</span>
+            <span>Previous</span>
           </button>
-          <span style={{ fontSize: 12, fontWeight: 600, padding: "0 8px" }}>Page {page}</span>
+          <span style={{ fontSize: 12, fontWeight: 700, padding: "0 8px", color: "#334155" }}>
+            Page {page} of {pages}
+          </span>
           <button
             className="btn"
-            disabled={items.length < limit}
-            onClick={() => setPage((p) => p + 1)}
-            style={{ padding: "6px 10px" }}
+            disabled={page >= pages}
+            onClick={() => setPage((p) => Math.min(pages, p + 1))}
+            style={{ padding: "6px 12px" }}
           >
             <span>Next</span>
             <ChevronRight size={14} />
@@ -330,40 +357,47 @@ export default function NotificationsView() {
         </div>
       </div>
 
-      {/* HTML Email Preview Modal */}
+      {/* Email Preview Modal */}
       {previewEmail && (
-        <div className="modal-bg" onClick={() => setPreviewEmail(null)}>
-          <div
-            className="modal"
-            style={{ maxWidth: 720, width: "95%" }}
-            onClick={(e) => e.stopPropagation()}
-          >
+        <div
+          className="modal-bg"
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget) setPreviewEmail(null);
+          }}
+        >
+          <div className="modal" style={{ maxWidth: 640 }}>
             <div className="modal-head">
               <div>
-                <span className="eyebrow">OFFICIAL AICTE EMAIL PREVIEW</span>
-                <h2>{previewEmail.subject || "Email Notification Preview"}</h2>
-                <p>
-                  To: <b>{previewEmail.recipient_email}</b> · Trigger: <b>{previewEmail.trigger_event}</b>
-                </p>
+                <div className="eyebrow">
+                  <Mail size={13} />
+                  <span>DISPATCHED NOTIFICATION PAYLOAD</span>
+                </div>
+                <h2>Email Inspector</h2>
+                <p>Delivered to <b>{previewEmail.recipient}</b></p>
               </div>
               <button className="modal-close-btn" onClick={() => setPreviewEmail(null)}>
                 <X size={16} />
               </button>
             </div>
 
-            <div
-              style={{
-                border: "1px solid #cbd5e1",
-                borderRadius: 12,
-                overflow: "hidden",
-                background: "#ffffff",
-                boxShadow: "0 4px 12px rgba(0,0,0,0.05)"
-              }}
-              dangerouslySetInnerHTML={{ __html: previewEmail.message_html }}
-            />
+            <div style={{ background: "#f8fafc", padding: 16, borderRadius: 12, border: "1px solid var(--line)", marginBottom: 16, fontSize: 12 }}>
+              <div style={{ marginBottom: 6 }}><b>Subject:</b> {previewEmail.subject}</div>
+              <div style={{ marginBottom: 6 }}><b>Event Trigger:</b> {previewEmail.event}</div>
+              <div style={{ marginBottom: 6 }}><b>Application:</b> {previewEmail.application_id}</div>
+              <div><b>Timestamp:</b> {new Date(previewEmail.created_at).toLocaleString()}</div>
+            </div>
+
+            <div style={{ border: "1px solid var(--line)", borderRadius: 12, padding: 18, background: "#ffffff", fontSize: 13, lineHeight: 1.6 }}>
+              <div style={{ fontWeight: 700, color: "#1e3a8a", marginBottom: 10 }}>Message Body:</div>
+              <div style={{ whiteSpace: "pre-wrap", color: "#334155" }}>
+                {previewEmail.message}
+              </div>
+            </div>
 
             <div className="modal-actions">
-              <button className="btn primary" onClick={() => setPreviewEmail(null)}>Done</button>
+              <button className="btn" onClick={() => setPreviewEmail(null)}>
+                Close Inspector
+              </button>
             </div>
           </div>
         </div>

@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 import { useState, useMemo } from "react";
 import {
@@ -14,7 +15,21 @@ import {
   ShieldCheck,
   Building2,
   Calendar,
-  AlertCircle
+  AlertCircle,
+  Activity,
+  ChevronRight,
+  Sparkles,
+  Layers,
+  ArrowRight,
+  Check,
+  UserCheck,
+  Shield,
+  Zap,
+  Globe,
+  Lock,
+  Mail,
+  MapPin,
+  Award
 } from "lucide-react";
 
 const STAGES = [
@@ -27,14 +42,75 @@ const STAGES = [
   "Rejected"
 ];
 
-const STAGE_COLORS = [
-  "#94a3b8",
-  "#3b82f6",
-  "#8b5cf6",
-  "#ef4444",
-  "#f59e0b",
-  "#10b981",
-  "#64748b"
+const STAGE_CONFIG = {
+  "Draft": { color: "#64748b", bg: "#f1f5f9", border: "#cbd5e1", icon: FileText },
+  "Submitted": { color: "#2563eb", bg: "#eff6ff", border: "#bfdbfe", icon: Send },
+  "Under Review": { color: "#7c3aed", bg: "#f5f3ff", border: "#ddd6fe", icon: Clock },
+  "Correction Required": { color: "#e11d48", bg: "#fff1f2", border: "#fecdd3", icon: AlertTriangle },
+  "Resubmitted": { color: "#d97706", bg: "#fffbeb", border: "#fde68a", icon: RefreshCw },
+  "Approved": { color: "#059669", bg: "#ecfdf5", border: "#a7f3d0", icon: CheckCircle2 },
+  "Rejected": { color: "#475569", bg: "#f8fafc", border: "#e2e8f0", icon: XCircle }
+};
+
+// Verified AICTE Institutional Campuses Showcase Cards
+const CAMPUS_SHOWCASES = [
+  {
+    id: "SHOW-01",
+    name: "National Institute of Technology & Advanced Science",
+    code: "AICTE-DL-8924011",
+    location: "New Delhi, NCR",
+    category: "Technical Campus",
+    status: "Approved",
+    statusClass: "approved",
+    builtUp: "42,500 sq.m",
+    facultyCount: "340 Faculty",
+    image: "https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=700&q=80"
+  },
+  {
+    id: "SHOW-02",
+    name: "Vellore Apex Institute of Technology & Research",
+    code: "AICTE-KA-7392812",
+    location: "Bengaluru, Karnataka",
+    category: "Autonomous Engineering",
+    status: "Approved",
+    statusClass: "approved",
+    builtUp: "38,200 sq.m",
+    facultyCount: "295 Faculty",
+    image: "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=700&q=80"
+  },
+  {
+    id: "SHOW-03",
+    name: "Bharati Vidyapeeth Technical Institute",
+    code: "AICTE-MH-9120485",
+    location: "Pune, Maharashtra",
+    category: "Polytechnic & Applied Sci",
+    status: "Resubmitted",
+    statusClass: "resubmitted",
+    builtUp: "29,400 sq.m",
+    facultyCount: "180 Faculty",
+    image: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=700&q=80"
+  },
+  {
+    id: "SHOW-04",
+    name: "Indira Gandhi Technological Sciences University",
+    code: "AICTE-TS-6548190",
+    location: "Hyderabad, Telangana",
+    category: "State Technical Hub",
+    status: "Under Review",
+    statusClass: "review",
+    builtUp: "51,000 sq.m",
+    facultyCount: "410 Faculty",
+    image: "https://images.unsplash.com/photo-1498243691581-b145c3f54a5a?auto=format&fit=crop&w=700&q=80"
+  }
+];
+
+// Institutional table row avatars
+const INSTITUTION_AVATARS = [
+  "https://images.unsplash.com/photo-1562774053-701939374585?auto=format&fit=crop&w=120&q=80",
+  "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=120&q=80",
+  "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=120&q=80",
+  "https://images.unsplash.com/photo-1498243691581-b145c3f54a5a?auto=format&fit=crop&w=120&q=80",
+  "https://images.unsplash.com/photo-1592280771190-3e2e4d571952?auto=format&fit=crop&w=120&q=80"
 ];
 
 export default function DashboardView({
@@ -43,12 +119,22 @@ export default function DashboardView({
   connected,
   loading,
   error,
+  currentUser,
+  onQuickLogin,
   onSelectApp,
   onNewApp,
   onNavigate,
   onRefresh
 }) {
   const [exporting, setExporting] = useState(false);
+  const [activeFilter, setActiveFilter] = useState(null);
+
+  const total = stats?.total ?? 0;
+  const underReview = stats?.under_review ?? 0;
+  const correctionRequired = stats?.correction_required ?? 0;
+  const approved = stats?.approved ?? 0;
+  const rejected = stats?.rejected ?? 0;
+  const submitted = stats?.submitted ?? 0;
 
   const getStatusColor = (st) => {
     switch (st) {
@@ -62,25 +148,20 @@ export default function DashboardView({
     }
   };
 
-  const total = stats?.total ?? 0;
-  const underReview = stats?.under_review ?? 0;
-  const correctionRequired = stats?.correction_required ?? 0;
-  const approved = stats?.approved ?? 0;
-  const rejected = stats?.rejected ?? 0;
-  const submitted = stats?.submitted ?? 0;
-
   // Pipeline distribution calculation
   const pipeline = useMemo(() => {
-    return STAGES.map((st, i) => {
+    return STAGES.map((st) => {
       const match = stats?.by_status?.find((item) => item.status === st);
       const count = match ? match.count : 0;
+      const percentage = total > 0 ? Math.round((count / total) * 100) : 0;
       return {
         stage: st,
         count,
-        color: STAGE_COLORS[i]
+        percentage,
+        config: STAGE_CONFIG[st] || { color: "#64748b", bg: "#f1f5f9", icon: FileText }
       };
     });
-  }, [stats]);
+  }, [stats, total]);
 
   // Attention items: applications requiring corrections or under review
   const attentionItems = useMemo(() => {
@@ -105,39 +186,145 @@ export default function DashboardView({
     }
   }
 
+  // Filtered recent apps if user clicks a stage
+  const displayApps = useMemo(() => {
+    if (!activeFilter) return recentApps;
+    return recentApps.filter((a) => a.status === activeFilter);
+  }, [recentApps, activeFilter]);
+
   return (
-    <div>
-      {/* Top Heading with Action Bar */}
-      <div className="heading">
-        <div>
-          <div className="eyebrow">
-            <ShieldCheck size={14} />
-            <span>Statutory Surveillance & Workflow Automation</span>
-          </div>
-          <h1>AICTE Approval Workflow Dashboard</h1>
-          <p>
-            Real-time scrutiny status, statutory metrics, and document compliance pipeline.{" "}
-            <span style={{ color: connected ? "#059669" : "#e11d48", fontWeight: 600 }}>
-              ● {connected ? "Connected to MongoDB Atlas" : "Backend Disconnected"}
+    <div style={{ animation: "fadeIn 0.25s ease" }}>
+      {/* ================================================================
+          1. SPECTACULAR EXECUTIVE HERO COMMAND DECK
+          ================================================================ */}
+      <section className="executive-hero-container">
+        {/* Top Statutory Ticker */}
+        <div className="hero-top-ticker">
+          <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+            <div className="gov-emblem-badge" title="Official State Emblem of India">
+              <img
+                src="https://upload.wikimedia.org/wikipedia/commons/5/55/Emblem_of_India.svg"
+                alt="Emblem of India"
+                style={{ width: 18, height: 18, objectFit: "contain", filter: "brightness(0) invert(1)" }}
+                onError={(e) => {
+                  e.currentTarget.style.display = "none";
+                  const fallback = e.currentTarget.parentElement?.querySelector(".emblem-fallback");
+                  if (fallback) fallback.style.display = "inline";
+                }}
+              />
+              <span className="emblem-fallback" style={{ display: "none", fontSize: 13 }}>🏛️</span>
+            </div>
+            <span style={{ fontWeight: 800, color: "#ffffff", letterSpacing: 1.1 }}>
+              AICTE STATUTORY BUREAU
             </span>
+            <span className="gov-tag-saffron">
+              GOVT. OF INDIA
+            </span>
+          </div>
+
+          <div style={{ display: "flex", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
+            <div className="tricolor-indicator-pill" title="National Regulatory Registry">
+              <div className="tricolor-dots">
+                <span className="tricolor-dot-saffron" />
+                <span className="tricolor-dot-white" />
+                <span className="tricolor-dot-green" />
+              </div>
+              <span>AICTE Official Portal</span>
+            </div>
+            <span className="hero-badge-tag">
+              <span className={`pulse-dot ${connected ? "online" : "offline"}`} />
+              <span>{connected ? "MONGODB ATLAS CLUSTER: ONLINE" : "OFFLINE CLUSTER"}</span>
+            </span>
+            <span style={{ color: "#94a3b8", fontSize: 11.5 }}>
+              ACADEMIC CYCLE 2026-27
+            </span>
+          </div>
+        </div>
+
+        {/* Hero Title & Mission Subtitle */}
+        <div style={{ maxWidth: 840 }}>
+          <h1 className="hero-title-main">
+            Statutory Approval & Regulatory Surveillance Command Center
+          </h1>
+          <p className="hero-sub-p">
+            Automated compliance adjudication and technical scrutiny platform for regulatory administration. Live verification of institutional credentials, magic-byte document authenticity, and end-to-end audit logging.
           </p>
         </div>
 
-        <div className="heading-actions">
-          <button className="btn" onClick={handleExportJson} disabled={recentApps.length === 0 || exporting}>
-            <Download size={14} />
-            <span>Export JSON</span>
+        {/* Hero Real-Time HUD Metrics Pods */}
+        <div className="hero-hud-grid">
+          <div className="hud-pod">
+            <div className="hud-pod-label">
+              <span>Total Filings</span>
+              <FileText size={14} color="#60a5fa" />
+            </div>
+            <div className="hud-pod-value">{loading ? "…" : total}</div>
+            <div className="hud-pod-sub">Registered institutional records in Atlas</div>
+          </div>
+
+          <div className="hud-pod">
+            <div className="hud-pod-label">
+              <span>Scrutiny Pipeline</span>
+              <Clock size={14} color="#a78bfa" />
+            </div>
+            <div className="hud-pod-value" style={{ color: "#a78bfa" }}>
+              {loading ? "…" : underReview + submitted}
+            </div>
+            <div className="hud-pod-sub">Active committee evaluation queue</div>
+          </div>
+
+          <div className="hud-pod">
+            <div className="hud-pod-label">
+              <span>Deficiencies Flagged</span>
+              <AlertTriangle size={14} color="#f59e0b" />
+            </div>
+            <div className="hud-pod-value" style={{ color: "#f59e0b" }}>
+              {loading ? "…" : correctionRequired}
+            </div>
+            <div className="hud-pod-sub">Requiring applicant resubmission</div>
+          </div>
+
+          <div className="hud-pod">
+            <div className="hud-pod-label">
+              <span>Approvals Cleared</span>
+              <CheckCircle2 size={14} color="#34d399" />
+            </div>
+            <div className="hud-pod-value" style={{ color: "#34d399" }}>
+              {loading ? "…" : approved}
+            </div>
+            <div className="hud-pod-sub">Formal statutory approval issued</div>
+          </div>
+        </div>
+
+        {/* Hero Quick Action Deck */}
+        <div className="hero-action-deck">
+          <button className="hero-action-btn-primary" onClick={onNewApp}>
+            <Plus size={16} strokeWidth={2.4} />
+            <span>File Statutory Application</span>
           </button>
-          <button className="btn" onClick={onRefresh}>
+          <button className="hero-action-btn-secondary" onClick={() => onNavigate("AI compliance")}>
+            <Sparkles size={15} color="#60a5fa" />
+            <span>Compliance AI Radar</span>
+          </button>
+          <button className="hero-action-btn-secondary" onClick={() => onNavigate("Notifications")}>
+            <Mail size={15} color="#a78bfa" />
+            <span>Dispatch & Email Audit</span>
+          </button>
+          <button className="hero-action-btn-secondary" onClick={handleExportJson} disabled={recentApps.length === 0 || exporting}>
+            <Download size={15} />
+            <span>Export Register (JSON)</span>
+          </button>
+          <button
+            className="hero-action-btn-secondary"
+            onClick={onRefresh}
+            style={{ marginLeft: "auto", background: "transparent" }}
+            title="Refresh database state"
+          >
             <RefreshCw size={14} />
-            <span>Refresh</span>
-          </button>
-          <button className="btn primary" onClick={onNewApp}>
-            <Plus size={15} strokeWidth={2.4} />
-            <span>File Application</span>
+            <span>Sync Cluster</span>
           </button>
         </div>
-      </div>
+      </section>
 
       {error && (
         <div className="error">
@@ -147,129 +334,80 @@ export default function DashboardView({
         </div>
       )}
 
-      {/* Metrics Row (6 cards with distinct styling and Lucide icons) */}
-      <section className="metrics">
-        {/* Total Applications */}
-        <div className="metric">
-          <div className="metric-header">
-            <label>Total Applications</label>
-            <div className="metric-icon-box" style={{ background: "#eff6ff", color: "#2563eb" }}>
-              <FileText size={18} />
-            </div>
+      {/* ================================================================
+          2. INTERACTIVE CONNECTED LIFECYCLE STEPPER
+          ================================================================ */}
+      <section className="pipeline-stepper-card">
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+          <div>
+            <h3 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: "var(--ink)" }}>
+              Interactive Statutory Lifecycle Stepper
+            </h3>
+            <p style={{ margin: "2px 0 0", fontSize: 12.5, color: "var(--muted)" }}>
+              Click any stage below to dynamically filter the institutional register
+            </p>
           </div>
-          <strong>{loading ? "…" : total}</strong>
-          <small>Total records in MongoDB Atlas</small>
+          {activeFilter && (
+            <button
+              type="button"
+              className="btn"
+              style={{ fontSize: 11.5, padding: "4px 10px", color: "var(--primary)" }}
+              onClick={() => setActiveFilter(null)}
+            >
+              Clear filter: <b>{activeFilter}</b> ✕
+            </button>
+          )}
         </div>
 
-        {/* Submitted for Scrutiny */}
-        <div className="metric">
-          <div className="metric-header">
-            <label>Submitted for Scrutiny</label>
-            <div className="metric-icon-box" style={{ background: "#eef2ff", color: "#4f46e5" }}>
-              <Send size={18} />
-            </div>
-          </div>
-          <strong style={{ color: "#4f46e5" }}>{loading ? "…" : submitted}</strong>
-          <small>Queued for scrutiny committee</small>
-        </div>
-
-        {/* Under Review */}
-        <div className="metric">
-          <div className="metric-header">
-            <label>Under Review</label>
-            <div className="metric-icon-box" style={{ background: "#f5f3ff", color: "#7c3aed" }}>
-              <Clock size={18} />
-            </div>
-          </div>
-          <strong style={{ color: "#7c3aed" }}>{loading ? "…" : underReview}</strong>
-          <small>Active committee evaluation</small>
-        </div>
-
-        {/* Corrections Required */}
-        <div className="metric">
-          <div className="metric-header">
-            <label>Corrections Required</label>
-            <div className="metric-icon-box" style={{ background: "#fffbeb", color: "#d97706" }}>
-              <AlertTriangle size={18} />
-            </div>
-          </div>
-          <strong style={{ color: "#d97706" }}>{loading ? "…" : correctionRequired}</strong>
-          <small>Action needed by applicant</small>
-        </div>
-
-        {/* Approved */}
-        <div className="metric">
-          <div className="metric-header">
-            <label>Approved</label>
-            <div className="metric-icon-box" style={{ background: "#ecfdf5", color: "#059669" }}>
-              <CheckCircle2 size={18} />
-            </div>
-          </div>
-          <strong style={{ color: "#059669" }}>{loading ? "…" : approved}</strong>
-          <small>Formal approvals granted</small>
-        </div>
-
-        {/* Rejected */}
-        <div className="metric">
-          <div className="metric-header">
-            <label>Rejected</label>
-            <div className="metric-icon-box" style={{ background: "#fff1f2", color: "#e11d48" }}>
-              <XCircle size={18} />
-            </div>
-          </div>
-          <strong style={{ color: "#e11d48" }}>{loading ? "…" : rejected}</strong>
-          <small>Applications rejected</small>
+        <div className="stepper-nodes-row">
+          {pipeline.map(({ stage, count, percentage, config }) => {
+            const IconComponent = config.icon;
+            const isSelected = activeFilter === stage;
+            return (
+              <div
+                key={stage}
+                className={`stepper-node-item ${isSelected ? "selected" : ""}`}
+                onClick={() => setActiveFilter(isSelected ? null : stage)}
+              >
+                <div
+                  className="stepper-node-icon"
+                  style={{
+                    background: config.bg,
+                    color: config.color,
+                    border: `1px solid ${config.border}`
+                  }}
+                >
+                  <IconComponent size={16} />
+                </div>
+                <div className="stepper-node-title">{stage}</div>
+                <span
+                  className="stepper-node-badge"
+                  style={{
+                    background: config.bg,
+                    color: config.color
+                  }}
+                >
+                  {count} ({percentage}%)
+                </span>
+              </div>
+            );
+          })}
         </div>
       </section>
 
-      {/* Middle Row: Pipeline & Attention Items */}
+      {/* ================================================================
+          3. MIDDLE SECTION: REGULATORY ATTENTION & PIPELINE HEALTH
+          ================================================================ */}
       <section className="middle">
-        {/* Pipeline Panel */}
-        <div className="panel">
-          <div className="panel-head">
-            <div>
-              <h2>Approval Workflow Stages</h2>
-              <p>Application lifecycle distribution in MongoDB Atlas</p>
-            </div>
-            <button className="link" onClick={() => onNavigate("Applications")}>
-              <span>View All Applications</span>
-              <ArrowUpRight size={14} />
-            </button>
-          </div>
-
-          <div className="pipeline-top">
-            <strong>{total}</strong>
-            <span>Active institutional records</span>
-          </div>
-
-          {pipeline.map(({ stage, count, color }) => (
-            <div className="stage" key={stage}>
-              <div className="stage-line">
-                <span>{stage}</span>
-                <b>{count} {total ? `(${Math.round((count / total) * 100)}%)` : ""}</b>
-              </div>
-              <div className="track">
-                <div
-                  className="fill"
-                  style={{
-                    width: `${total ? Math.max(count > 0 ? 5 : 0, (count / total) * 100) : 0}%`,
-                    background: color
-                  }}
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {/* Needs Attention Panel */}
+        {/* Needs Regulatory Attention Panel */}
         <div className="panel">
           <div className="panel-head">
             <div>
               <h2>Needs Regulatory Attention</h2>
-              <p>Applications awaiting urgent action or resubmission</p>
+              <p>Filings flagged with defects or undergoing scrutiny review</p>
             </div>
-            <span className="status red" style={{ fontWeight: 700 }}>
-              {attentionItems.length.toString().padStart(2, "0")} ITEMS
+            <span className="status red" style={{ fontWeight: 800 }}>
+              {attentionItems.length.toString().padStart(2, "0")} BOTTLENECKS
             </span>
           </div>
 
@@ -283,8 +421,8 @@ export default function DashboardView({
               >
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 6 }}>
                   <div>
-                    <b style={{ fontSize: 13, color: "#0f172a" }}>{app.institution}</b>
-                    <div style={{ fontSize: 11, color: "#64748b", marginTop: 2 }}>
+                    <b style={{ fontSize: 13.5, color: "var(--ink)" }}>{app.institution}</b>
+                    <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 2 }}>
                       <span className="app-id" style={{ fontSize: 11 }}>{app.id}</span> · {app.type}
                     </div>
                   </div>
@@ -293,46 +431,168 @@ export default function DashboardView({
                   </span>
                 </div>
 
-                <div style={{ fontSize: 11, color: "#64748b", marginBottom: 8 }}>
-                  Contact: {app.contact_name} ({app.contact_mobile})
+                <div style={{ fontSize: 12, color: "var(--muted)", marginBottom: 10 }}>
+                  Contact: <b style={{ color: "var(--ink)" }}>{app.contact_name}</b> ({app.contact_mobile})
                 </div>
 
                 <button
                   className="link"
                   onClick={() => onSelectApp(app.id)}
-                  style={{ fontSize: 11, padding: "2px 0" }}
+                  style={{ fontSize: 12, padding: "2px 0", fontWeight: 700 }}
                 >
-                  <span>Inspect Application Details</span>
-                  <ArrowUpRight size={13} />
+                  <span>Scrutinize & Action Application</span>
+                  <ArrowRight size={13} />
                 </button>
               </div>
             ))
           ) : (
-            <div className="empty">
-              {total === 0
-                ? "No applications in database yet. Create your first application above."
-                : "All applications are currently up to date! No pending regulatory bottlenecks."}
+            <div className="empty" style={{ padding: "36px 16px" }}>
+              <CheckCircle2 size={36} color="#059669" style={{ margin: "0 auto 10px" }} />
+              <div style={{ fontWeight: 800, color: "var(--ink)", marginBottom: 4 }}>
+                All Applications Fully Processed
+              </div>
+              <div style={{ fontSize: 12.5, color: "var(--muted)" }}>No applications currently require urgent committee intervention.</div>
             </div>
           )}
 
           <div style={{ marginTop: 14 }}>
             <button className="link" onClick={() => onNavigate("Applications")}>
-              <span>Review entire register</span>
+              <span>Review entire institutional register</span>
               <ArrowUpRight size={14} />
             </button>
           </div>
         </div>
+
+        {/* AI Compliance Surveillance Card */}
+        <div className="panel">
+          <div className="panel-head">
+            <div>
+              <div className="eyebrow" style={{ marginBottom: 4 }}>
+                <Sparkles size={12} />
+                <span>SURVEILLANCE RADAR</span>
+              </div>
+              <h2>Statutory Compliance AI</h2>
+              <p>Automated verification checklist across mandatory legal deeds</p>
+            </div>
+            <button className="link" onClick={() => onNavigate("AI compliance")}>
+              <span>Launch AI Radar</span>
+              <ArrowUpRight size={14} />
+            </button>
+          </div>
+
+          <div style={{ padding: 18, background: "var(--panel-card)", borderRadius: 14, border: "1px solid var(--line)", marginBottom: 14 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+              <span style={{ fontSize: 12, fontWeight: 700, color: "var(--ink)" }}>Mandatory Record Checklist</span>
+              <span className="status green" style={{ padding: "2px 8px" }}>4 Required</span>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 8, fontSize: 12, color: "var(--ink-secondary)" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <Check size={14} color="#059669" />
+                <span>1. Society / Trust Institution Registration</span>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <Check size={14} color="#059669" />
+                <span>2. Faculty Ratio & AICTE Qualifications</span>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <Check size={14} color="#059669" />
+                <span>3. Built-Up Space & Infrastructure Report</span>
+              </div>
+              <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                <Check size={14} color="#059669" />
+                <span>4. Audited Financial Statements & Corpus</span>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 16px", background: "var(--primary-light)", borderRadius: 10, border: "1px solid var(--line)" }}>
+            <span style={{ fontSize: 12, color: "var(--primary)", fontWeight: 600 }}>
+              Scrutiny readiness rating:
+            </span>
+            <span style={{ fontSize: 14, fontWeight: 900, color: "var(--primary)", fontFamily: "Outfit, sans-serif" }}>
+              Active AI Scanning
+            </span>
+          </div>
+        </div>
       </section>
 
-      {/* Recent Applications Table */}
+      {/* ================================================================
+          4. STATUTORY ACCREDITED CAMPUS SHOWCASE
+          ================================================================ */}
+      <section className="panel campus-showcase-panel">
+        <div className="panel-head">
+          <div>
+            <div className="eyebrow" style={{ marginBottom: 4 }}>
+              <Building2 size={12} color="#f97316" />
+              <span style={{ color: "var(--saffron, #f97316)" }}>CAMPUS & INFRASTRUCTURE REGISTRY</span>
+            </div>
+            <h2>Accredited Institutional Campuses</h2>
+            <p>Verified physical infrastructure, lab capacity, and faculty-cadre records</p>
+          </div>
+          <button className="link" onClick={() => onNavigate("Applications")}>
+            <span>View All Campuses</span>
+            <ArrowUpRight size={14} />
+          </button>
+        </div>
+
+        <div className="campus-showcase-grid">
+          {CAMPUS_SHOWCASES.map((campus) => (
+            <div key={campus.id} className="campus-card">
+              <div className="campus-img-wrap">
+                <img
+                  src={campus.image}
+                  alt={campus.name}
+                  className="campus-img"
+                  loading="lazy"
+                  onError={(e) => {
+                    e.currentTarget.src = "https://images.unsplash.com/photo-1541339907198-e08756dedf3f?auto=format&fit=crop&w=600&q=80";
+                  }}
+                />
+                <div className="campus-img-overlay" />
+                <span className={`campus-overlay-badge ${campus.statusClass}`}>
+                  {campus.status}
+                </span>
+                <span className="campus-category-pill">
+                  {campus.category}
+                </span>
+              </div>
+
+              <div className="campus-info">
+                <div className="campus-code">
+                  <Award size={12} color="var(--saffron, #f97316)" />
+                  <span>{campus.code}</span>
+                </div>
+                <h3 className="campus-name" title={campus.name}>
+                  {campus.name}
+                </h3>
+                <div className="campus-location">
+                  <MapPin size={12} />
+                  <span>{campus.location}</span>
+                </div>
+
+                <div className="campus-metric-row">
+                  <span className="campus-metric-tag">{campus.builtUp}</span>
+                  <span className="campus-year">{campus.facultyCount}</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ================================================================
+          5. LIVE RECENT APPLICATIONS TABLE
+          ================================================================ */}
       <section className="panel table-panel">
         <div className="panel-head">
           <div>
-            <h2>Recent AICTE Applications</h2>
-            <p>Latest institutional submissions retrieved live from MongoDB Atlas</p>
+            <h2>
+              {activeFilter ? `${activeFilter} Applications (${displayApps.length})` : "Recent Institutional Filings"}
+            </h2>
+            <p>Live synchronized records streamed directly from MongoDB Atlas</p>
           </div>
           <button className="link" onClick={() => onNavigate("Applications")}>
-            <span>Full Application Register</span>
+            <span>Full Register</span>
             <ArrowUpRight size={14} />
           </button>
         </div>
@@ -344,46 +604,64 @@ export default function DashboardView({
                 <th>APPLICATION ID</th>
                 <th>INSTITUTION NAME</th>
                 <th>APPLICATION TYPE</th>
-                <th>STATUS</th>
-                <th>CONTACT PERSON</th>
-                <th>SUBMITTED</th>
+                <th>SCRUTINY STATUS</th>
+                <th>AUTHORIZED CONTACT</th>
+                <th>DATE FILED</th>
+                <th>ACTION</th>
               </tr>
             </thead>
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan="6" className="loading">Connecting to MongoDB Atlas…</td>
+                  <td colSpan="7" className="loading">
+                    <RefreshCw size={24} style={{ color: "#2563eb", animation: "spin 1s linear infinite" }} />
+                    <span>Connecting to MongoDB Atlas & streaming records…</span>
+                  </td>
                 </tr>
-              ) : recentApps.length > 0 ? (
-                recentApps.map((a) => (
+              ) : displayApps.length > 0 ? (
+                displayApps.map((a, idx) => (
                   <tr key={a.id} onClick={() => onSelectApp(a.id)}>
                     <td>
                       <span className="app-id">{a.id}</span>
-                      <span className="sub">MongoDB Record</span>
+                      <span className="sub">Cluster Indexed</span>
                     </td>
                     <td>
-                      <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                        <div
-                          style={{
-                            width: 28,
-                            height: 28,
-                            borderRadius: 6,
-                            background: "#eff6ff",
-                            color: "#2563eb",
-                            display: "grid",
-                            placeItems: "center"
-                          }}
-                        >
-                          <Building2 size={15} />
+                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                        <div className="table-inst-avatar">
+                          <img
+                            src={INSTITUTION_AVATARS[idx % INSTITUTION_AVATARS.length]}
+                            alt={a.institution || "Campus"}
+                            className="table-inst-img"
+                            onError={(e) => {
+                              e.currentTarget.style.display = "none";
+                              const fb = e.currentTarget.parentElement?.querySelector(".table-inst-fallback");
+                              if (fb) fb.style.display = "grid";
+                            }}
+                          />
+                          <div className="table-inst-fallback" style={{ display: "none" }}>
+                            {a.institution ? a.institution.charAt(0).toUpperCase() : "I"}
+                          </div>
                         </div>
                         <div>
-                          <b>{a.institution}</b>
-                          <span className="sub">ID: {a.institution_id}</span>
+                          <b style={{ color: "var(--ink)" }}>{a.institution}</b>
+                          <span className="sub">AICTE ID: {a.institution_id}</span>
                         </div>
                       </div>
                     </td>
                     <td>
-                      <span style={{ fontWeight: 500, color: "#334155" }}>{a.type}</span>
+                      <span
+                        style={{
+                          fontWeight: 600,
+                          color: "var(--ink-secondary)",
+                          background: "var(--bg-subtle)",
+                          border: "1px solid var(--line)",
+                          padding: "3px 8px",
+                          borderRadius: 6,
+                          fontSize: 11.5
+                        }}
+                      >
+                        {a.type}
+                      </span>
                     </td>
                     <td>
                       <span className={`status ${getStatusColor(a.status)}`}>
@@ -391,21 +669,36 @@ export default function DashboardView({
                       </span>
                     </td>
                     <td>
-                      <div style={{ fontWeight: 500 }}>{a.contact_name}</div>
+                      <div style={{ fontWeight: 600, color: "var(--ink)" }}>{a.contact_name}</div>
                       <span className="sub">{a.contact_mobile}</span>
                     </td>
                     <td>
-                      <div style={{ display: "flex", alignItems: "center", gap: 5, color: "#64748b", fontSize: 12 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 6, color: "#64748b", fontSize: 12 }}>
                         <Calendar size={13} />
                         <span>{new Date(a.created_at).toLocaleDateString()}</span>
                       </div>
+                    </td>
+                    <td>
+                      <button
+                        className="btn"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onSelectApp(a.id);
+                        }}
+                        style={{ padding: "5px 12px", fontSize: 11.5 }}
+                      >
+                        <span>Inspect</span>
+                        <ChevronRight size={13} />
+                      </button>
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="6" className="empty">
-                    No applications exist in MongoDB Atlas yet. Click <b>&quot;+ File Application&quot;</b> to create a new application.
+                  <td colSpan="7" className="empty">
+                    {activeFilter
+                      ? `No applications currently match stage '${activeFilter}'.`
+                      : "No applications found. Click '+ File Statutory Application' to register a new submission."}
                   </td>
                 </tr>
               )}
@@ -414,8 +707,12 @@ export default function DashboardView({
         </div>
 
         <div className="table-foot">
-          <span>Showing <b>{recentApps.length}</b> of <b>{total}</b> total applications</span>
-          <span>Database: <b>aicte_workflow</b></span>
+          <span>
+            Showing <b>{displayApps.length}</b> of <b>{total}</b> total applications
+          </span>
+          <span>
+            Database Cluster: <b>aicte_workflow</b> (MongoDB Atlas)
+          </span>
         </div>
       </section>
     </div>

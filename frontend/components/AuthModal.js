@@ -10,7 +10,8 @@ import {
   Building2,
   Sparkles,
   AlertCircle,
-  UserCheck
+  UserCheck,
+  CheckCircle2
 } from "lucide-react";
 
 export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
@@ -73,17 +74,18 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="modal" style={{ maxWidth: 520 }}>
+      <div className="modal" style={{ maxWidth: 540 }}>
+        {/* Modal Header */}
         <div className="modal-head">
           <div>
             <div className="eyebrow">
-              <Shield size={14} />
-              <span>Identity & Single Sign-On</span>
+              <Shield size={13} />
+              <span>STATUTORY SECURE ACCESS GATEWAY</span>
             </div>
-            <h2>{tab === "login" ? "AICTE Portal Sign In" : "Institution Registration"}</h2>
-            <p>Access AICTE Statutory Approval Automation System</p>
+            <h2>{tab === "login" ? "AICTE Single Sign-On Portal" : "Institutional Bureau Registration"}</h2>
+            <p>Access AICTE Statutory Approval Automation & Surveillance System</p>
           </div>
-          <button className="modal-close-btn" onClick={onClose}>
+          <button className="modal-close-btn" onClick={onClose} aria-label="Close modal">
             <X size={16} />
           </button>
         </div>
@@ -106,7 +108,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
             onClick={() => { setTab("register"); setError(""); }}
           >
             <UserPlus size={15} />
-            <span>New Institution</span>
+            <span>Register Institution</span>
           </button>
         </div>
 
@@ -120,7 +122,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
         {tab === "login" ? (
           <form onSubmit={handleLogin}>
             <label>
-              Official Email Address
+              Official Registered Email Address
               <input
                 type="email"
                 required
@@ -130,17 +132,17 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
               />
             </label>
             <label>
-              Password
+              Security Password
               <input
                 type="password"
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter password"
+                placeholder="Enter your password"
               />
             </label>
 
-            {/* Quick Demo Switcher */}
+            {/* Quick 1-Click Demo Switcher */}
             <div
               style={{
                 margin: "18px 0",
@@ -150,40 +152,40 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
                 border: "1px solid #bfdbfe"
               }}
             >
-              <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 700, color: "#2563eb", marginBottom: 10 }}>
-                <Sparkles size={14} />
-                <span>INSTANT ONE-CLICK DEMO ACCOUNTS</span>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 11, fontWeight: 700, color: "#1e3a8a", marginBottom: 10, textTransform: "uppercase", letterSpacing: 0.8 }}>
+                <Sparkles size={14} color="#2563eb" />
+                <span>Instant 1-Click Evaluation Personas</span>
               </div>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
                 <button
                   type="button"
                   className="btn"
-                  style={{ fontSize: 11, padding: "8px 6px", display: "flex", flexDirection: "column", gap: 2 }}
+                  style={{ fontSize: 11.5, padding: "9px 8px", display: "flex", flexDirection: "column", gap: 2, alignItems: "center", background: "var(--panel-card)" }}
                   onClick={() => handleLogin(null, "admin@aicte.gov.in", "AdminSecure@2026")}
                   disabled={loading}
                 >
-                  <span style={{ fontWeight: 700, color: "#e11d48" }}>Admin HQ</span>
-                  <span style={{ fontSize: 9, color: "#64748b" }}>admin@aicte</span>
+                  <span style={{ fontWeight: 800, color: "#e11d48" }}>Admin HQ</span>
+                  <span style={{ fontSize: 9.5, color: "var(--muted)" }}>admin@aicte</span>
                 </button>
                 <button
                   type="button"
                   className="btn"
-                  style={{ fontSize: 11, padding: "8px 6px", display: "flex", flexDirection: "column", gap: 2 }}
+                  style={{ fontSize: 11.5, padding: "9px 8px", display: "flex", flexDirection: "column", gap: 2, alignItems: "center", background: "var(--panel-card)" }}
                   onClick={() => handleLogin(null, "reviewer@aicte.gov.in", "ReviewerSecure@2026")}
                   disabled={loading}
                 >
-                  <span style={{ fontWeight: 700, color: "#2563eb" }}>Reviewer</span>
-                  <span style={{ fontSize: 9, color: "#64748b" }}>reviewer@aicte</span>
+                  <span style={{ fontWeight: 800, color: "var(--primary)" }}>Reviewer</span>
+                  <span style={{ fontSize: 9.5, color: "var(--muted)" }}>reviewer@aicte</span>
                 </button>
                 <button
                   type="button"
                   className="btn"
-                  style={{ fontSize: 11, padding: "8px 6px", display: "flex", flexDirection: "column", gap: 2 }}
+                  style={{ fontSize: 11.5, padding: "9px 8px", display: "flex", flexDirection: "column", gap: 2, alignItems: "center", background: "var(--panel-card)" }}
                   onClick={() => handleLogin(null, "principal@mit.edu.in", "MitSecure@2026")}
                   disabled={loading}
                 >
-                  <span style={{ fontWeight: 700, color: "#059669" }}>College</span>
-                  <span style={{ fontSize: 9, color: "#64748b" }}>principal@mit</span>
+                  <span style={{ fontWeight: 800, color: "#059669" }}>College User</span>
+                  <span style={{ fontSize: 9.5, color: "var(--muted)" }}>principal@mit</span>
                 </button>
               </div>
             </div>
@@ -198,7 +200,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
         ) : (
           <form onSubmit={handleRegister}>
             <label>
-              Authorized Contact Person Name
+              Authorized Principal / Representative Name
               <input
                 required
                 value={name}
@@ -207,7 +209,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
               />
             </label>
             <label>
-              Official Email Address
+              Official Institutional Email Address
               <input
                 type="email"
                 required
@@ -217,7 +219,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
               />
             </label>
             <label>
-              Account Password (min 6 characters)
+              Security Password (min 6 characters)
               <input
                 type="password"
                 required
@@ -238,7 +240,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
                 />
               </label>
               <label>
-                Institution Full Name
+                Institution Full Legal Name
                 <input
                   required
                   value={institutionName}
@@ -250,7 +252,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
 
             <div className="notice" style={{ marginTop: 14 }}>
               <UserCheck size={16} />
-              <span>Registered institutions can file approval applications, upload mandatory statutory documents, and receive real-time updates.</span>
+              <span>Registered institutions can file approval applications, upload mandatory statutory documents, and receive real-time SMS updates.</span>
             </div>
 
             <div className="modal-actions">

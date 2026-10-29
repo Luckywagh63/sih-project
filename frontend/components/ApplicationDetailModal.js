@@ -19,7 +19,14 @@ import {
   Building2,
   Calendar,
   AlertCircle,
-  ArrowRight
+  ArrowRight,
+  Clock,
+  Sparkles,
+  Info,
+  Shield,
+  Copy,
+  ExternalLink,
+  Lock
 } from "lucide-react";
 
 const REQUIRED_DOC_TYPES = [
@@ -46,6 +53,7 @@ export default function ApplicationDetailModal({
   const [statusComments, setStatusComments] = useState("");
   const [reviewerComment, setReviewerComment] = useState("");
   const [savingComment, setSavingComment] = useState(false);
+  const [copiedId, setCopiedId] = useState(false);
 
   // Document upload state
   const [uploadDocType, setUploadDocType] = useState(initialDocType || REQUIRED_DOC_TYPES[0]);
@@ -213,6 +221,14 @@ export default function ApplicationDetailModal({
     }
   }
 
+  function handleCopyId() {
+    if (app?.id) {
+      navigator.clipboard.writeText(app.id);
+      setCopiedId(true);
+      setTimeout(() => setCopiedId(false), 2000);
+    }
+  }
+
   const availableTransitions = getAvailableTransitions();
 
   const getStatusColor = (st) => {
@@ -232,7 +248,7 @@ export default function ApplicationDetailModal({
     { id: "documents", label: `Documents (${app?.documents?.length || 0})`, icon: Files },
     { id: "compliance", label: `Compliance (${app?.compliance?.score ?? 0}%)`, icon: ShieldCheck },
     { id: "history", label: `Audit Trail (${app?.history?.length || 0})`, icon: History },
-    { id: "notifications", label: `Email Logs (${app?.notifications?.length || 0})`, icon: Mail }
+    { id: "notifications", label: `Notifications (${app?.notifications?.length || 0})`, icon: Mail }
   ];
 
   return (
@@ -242,23 +258,43 @@ export default function ApplicationDetailModal({
         if (e.target === e.currentTarget) onClose();
       }}
     >
-      <div className="modal" style={{ maxWidth: 900 }}>
-        {/* Header */}
+      <div className="modal" style={{ maxWidth: 940 }}>
+        {/* Header with Official Government Ribbon */}
         <div className="modal-head">
           <div>
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <span className="app-id" style={{ fontSize: 18 }}>{app?.id || appId}</span>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+              <span className="app-id" style={{ fontSize: 17 }}>
+                {app?.id || appId}
+              </span>
+              <button
+                type="button"
+                onClick={handleCopyId}
+                style={{
+                  background: "transparent",
+                  border: 0,
+                  color: "#64748b",
+                  cursor: "pointer",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: 4,
+                  fontSize: 11
+                }}
+                title="Copy Application ID"
+              >
+                <Copy size={13} />
+                <span>{copiedId ? "Copied!" : "Copy ID"}</span>
+              </button>
               {app && (
                 <span className={`status ${getStatusColor(app.status)}`} style={{ fontSize: 12 }}>
                   {app.status}
                 </span>
               )}
             </div>
-            <p style={{ marginTop: 4, fontSize: 13, color: "#334155", fontWeight: 600 }}>
+            <p style={{ marginTop: 4, fontSize: 14, color: "var(--ink)", fontWeight: 700 }}>
               {app?.institution || "Loading details…"}
             </p>
           </div>
-          <button className="modal-close-btn" onClick={onClose}>
+          <button className="modal-close-btn" onClick={onClose} aria-label="Close modal">
             <X size={16} />
           </button>
         </div>
@@ -291,38 +327,45 @@ export default function ApplicationDetailModal({
         </div>
 
         {loading ? (
-          <div className="loading">Connecting to MongoDB Atlas & loading application…</div>
+          <div className="loading">
+            <Sparkles size={24} style={{ color: "var(--primary)", animation: "pulse 1.5s infinite" }} />
+            <span>Connecting to MongoDB Atlas & loading application record…</span>
+          </div>
         ) : !app ? (
-          <div className="empty">Application record could not be loaded.</div>
+          <div className="empty">Application record could not be loaded from cluster.</div>
         ) : (
           <div>
             {/* TAB: OVERVIEW */}
             {activeTab === "overview" && (
               <div>
                 <div className="detail-grid">
-                  <div style={{ padding: 16, background: "#f8fafc", borderRadius: 12, border: "1px solid var(--line)" }}>
-                    <span style={{ fontSize: 11, color: "var(--muted)", textTransform: "uppercase", fontWeight: 700 }}>
-                      Institution Details
+                  <div style={{ padding: 18, background: "var(--panel-card)", borderRadius: 12, border: "1px solid var(--line)" }}>
+                    <span style={{ fontSize: 11, color: "var(--muted)", textTransform: "uppercase", fontWeight: 700, letterSpacing: 0.8 }}>
+                      Institutional Profile
                     </span>
-                    <div style={{ fontWeight: 700, fontSize: 14, color: "#0f172a", marginTop: 6 }}>{app.institution}</div>
-                    <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 4 }}>AICTE ID: <b>{app.institution_id}</b></div>
-                    <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 4 }}>Type: <b>{app.type}</b></div>
-                    <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 4 }}>Address: {app.address}</div>
+                    <div style={{ fontWeight: 800, fontSize: 15, color: "var(--ink)", marginTop: 6 }}>{app.institution}</div>
+                    <div style={{ fontSize: 12.5, color: "var(--ink-secondary)", marginTop: 6 }}>
+                      AICTE Permanent ID: <b style={{ fontFamily: "JetBrains Mono, monospace" }}>{app.institution_id}</b>
+                    </div>
+                    <div style={{ fontSize: 12.5, color: "var(--ink-secondary)", marginTop: 4 }}>Approval Type: <b>{app.type}</b></div>
+                    <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 6, lineHeight: 1.5 }}>
+                      Campus Location: {app.address}
+                    </div>
                   </div>
 
-                  <div style={{ padding: 16, background: "#f8fafc", borderRadius: 12, border: "1px solid var(--line)" }}>
-                    <span style={{ fontSize: 11, color: "var(--muted)", textTransform: "uppercase", fontWeight: 700 }}>
-                      Authorized Contact
+                  <div style={{ padding: 18, background: "var(--panel-card)", borderRadius: 12, border: "1px solid var(--line)" }}>
+                    <span style={{ fontSize: 11, color: "var(--muted)", textTransform: "uppercase", fontWeight: 700, letterSpacing: 0.8 }}>
+                      Authorized Signatory & Contact
                     </span>
-                    <div style={{ fontWeight: 700, fontSize: 14, color: "#0f172a", marginTop: 6 }}>{app.contact_name}</div>
-                    <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 4 }}>
-                      Email: <b style={{ color: "#2563eb" }}>{app.contact_email}</b>
+                    <div style={{ fontWeight: 800, fontSize: 15, color: "var(--ink)", marginTop: 6 }}>{app.contact_name}</div>
+                    <div style={{ fontSize: 12.5, color: "var(--ink-secondary)", marginTop: 6 }}>
+                      Email: <b style={{ color: "var(--primary)" }}>{app.contact_email}</b>
                     </div>
-                    <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 4 }}>
-                      Mobile: <b>{app.contact_mobile}</b>
+                    <div style={{ fontSize: 12.5, color: "var(--ink-secondary)", marginTop: 4 }}>
+                      Mobile Phone: <b>{app.contact_mobile}</b>
                     </div>
-                    <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 4 }}>
-                      Created: {new Date(app.created_at).toLocaleString()}
+                    <div style={{ fontSize: 12, color: "#64748b", marginTop: 6 }}>
+                      Date Registered: {new Date(app.created_at).toLocaleString()}
                     </div>
                   </div>
                 </div>
@@ -331,7 +374,7 @@ export default function ApplicationDetailModal({
                 <div
                   style={{
                     marginTop: 18,
-                    padding: 16,
+                    padding: 18,
                     background: "linear-gradient(135deg, #f8faff 0%, #eff6ff 100%)",
                     borderRadius: 12,
                     border: "1px solid #bfdbfe"
@@ -339,9 +382,9 @@ export default function ApplicationDetailModal({
                 >
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8, flexWrap: "wrap", gap: 10 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                      <UserCheck size={16} color="#2563eb" />
-                      <span style={{ fontSize: 12, fontWeight: 700, color: "#1e3a8a" }}>
-                        Assigned Reviewer: <b>{app.assigned_reviewer_name || "Unassigned"}</b>
+                      <UserCheck size={18} color="#2563eb" />
+                      <span style={{ fontSize: 13, fontWeight: 700, color: "#1e3a8a" }}>
+                        Assigned Scrutiny Reviewer: <b>{app.assigned_reviewer_name || "Unassigned"}</b>
                       </span>
                     </div>
 
@@ -350,9 +393,9 @@ export default function ApplicationDetailModal({
                         <select
                           value={selectedReviewerId}
                           onChange={(e) => setSelectedReviewerId(e.target.value)}
-                          style={{ fontSize: 12, padding: "6px 10px" }}
+                          style={{ fontSize: 12.5, padding: "6px 12px", fontWeight: 600 }}
                         >
-                          <option value="">-- Select Reviewer --</option>
+                          <option value="">-- Select Reviewer Officer --</option>
                           {reviewers.map((r) => (
                             <option key={r.id} value={r.id}>{r.name} ({r.email})</option>
                           ))}
@@ -360,34 +403,34 @@ export default function ApplicationDetailModal({
                         <button
                           type="button"
                           className="btn primary"
-                          style={{ fontSize: 12, padding: "6px 12px" }}
+                          style={{ fontSize: 12, padding: "6px 14px" }}
                           disabled={!selectedReviewerId || assigning}
                           onClick={handleAssignReviewer}
                         >
-                          {assigning ? "Assigning…" : "Assign"}
+                          {assigning ? "Assigning…" : "Assign Reviewer"}
                         </button>
                       </div>
                     )}
                   </div>
                   {app.review_notes && (
-                    <div style={{ fontSize: 12, color: "#334155", background: "white", padding: 12, borderRadius: 8, border: "1px solid #cbd5e1" }}>
-                      <b>Reviewer Notes:</b> {app.review_notes}
+                    <div style={{ fontSize: 12.5, color: "#334155", background: "white", padding: 12, borderRadius: 8, border: "1px solid #cbd5e1", marginTop: 8 }}>
+                      <b style={{ color: "#1e3a8a" }}>Official Reviewer Observations:</b> {app.review_notes}
                     </div>
                   )}
                 </div>
 
                 {/* Workflow Status Transition Controls */}
-                <div style={{ marginTop: 20, padding: 18, background: "#fff", border: "1px solid var(--line)", borderRadius: 12 }}>
+                <div style={{ marginTop: 20, padding: 20, background: "#fff", border: "1px solid var(--line)", borderRadius: 12 }}>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
                     <Send size={16} color="#2563eb" />
-                    <h3 style={{ margin: 0, fontSize: 14, fontWeight: 700 }}>
+                    <h3 style={{ margin: 0, fontSize: 14.5, fontWeight: 700 }}>
                       Workflow Action Center ({role})
                     </h3>
                   </div>
 
                   {availableTransitions.length > 0 ? (
                     <div>
-                      <div style={{ fontSize: 12, color: "var(--muted)", marginBottom: 10 }}>
+                      <div style={{ fontSize: 12.5, color: "var(--muted)", marginBottom: 10 }}>
                         Permitted transitions from current status <b>{currentStatus}</b>:
                       </div>
                       <div style={{ display: "flex", flexWrap: "wrap", gap: 10, marginBottom: 14 }}>
@@ -411,12 +454,12 @@ export default function ApplicationDetailModal({
                           value={statusComments}
                           onChange={(e) => setStatusComments(e.target.value)}
                           placeholder="Provide regulatory justification or specific instructions (sent in audit log and reviewer notes)"
-                          style={{ width: "100%", marginTop: 6, fontSize: 12 }}
+                          style={{ width: "100%", marginTop: 6, fontSize: 12.5 }}
                         />
                       </label>
                     </div>
                   ) : (
-                    <div style={{ fontSize: 12, color: "var(--muted)" }}>
+                    <div style={{ fontSize: 12.5, color: "var(--muted)" }}>
                       {["Approved", "Rejected"].includes(currentStatus)
                         ? `Application is in final '${currentStatus}' decision state. No further status transitions allowed.`
                         : `No transitions are currently permitted for role '${role}' from '${currentStatus}'.`}
@@ -427,15 +470,15 @@ export default function ApplicationDetailModal({
                 {/* Reviewer Comment Box */}
                 {(role === "Reviewer" || role === "Administrator") && (
                   <form onSubmit={handleAddComment} style={{ marginTop: 20 }}>
-                    <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#334155" }}>
-                      Add Scrutiny Reviewer Comment
+                    <label style={{ display: "block", fontSize: 12.5, fontWeight: 700, color: "#1e293b" }}>
+                      Append Scrutiny Reviewer Comment to Audit Log
                       <textarea
                         rows="2"
                         required
                         value={reviewerComment}
                         onChange={(e) => setReviewerComment(e.target.value)}
-                        placeholder="Add formal reviewer comment or feedback to the immutable audit log..."
-                        style={{ width: "100%", marginTop: 6, fontSize: 12 }}
+                        placeholder="Add formal scrutiny observation or feedback to the immutable audit log..."
+                        style={{ width: "100%", marginTop: 6, fontSize: 12.5 }}
                       />
                     </label>
                     <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}>
@@ -452,9 +495,9 @@ export default function ApplicationDetailModal({
             {activeTab === "documents" && (
               <div>
                 <div style={{ marginBottom: 16 }}>
-                  <h3 style={{ margin: "0 0 4px", fontSize: 14, fontWeight: 700 }}>Mandatory AICTE Documents</h3>
-                  <p style={{ fontSize: 12, color: "var(--muted)" }}>
-                    All 4 statutory documents must be uploaded for high compliance scoring and committee review.
+                  <h3 style={{ margin: "0 0 4px", fontSize: 15, fontWeight: 700 }}>Mandatory AICTE Statutory Documents</h3>
+                  <p style={{ fontSize: 12.5, color: "var(--muted)" }}>
+                    All 4 statutory records must be attached for high compliance clearance and approval convening.
                   </p>
                 </div>
 
@@ -462,16 +505,16 @@ export default function ApplicationDetailModal({
                 <form
                   onSubmit={handleFileUpload}
                   style={{
-                    padding: 18,
+                    padding: 20,
                     background: "#f8faff",
                     borderRadius: 14,
                     border: "2px dashed #bfdbfe",
                     marginBottom: 20
                   }}
                 >
-                  <div style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 700, fontSize: 13, marginBottom: 12, color: "#2563eb" }}>
-                    <UploadCloud size={18} />
-                    <span>Upload or Replace Mandatory Document</span>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, fontWeight: 700, fontSize: 13.5, marginBottom: 12, color: "#1e3a8a" }}>
+                    <UploadCloud size={18} color="#2563eb" />
+                    <span>Upload or Replace Statutory Document</span>
                   </div>
                   <div className="detail-grid">
                     <label>
@@ -479,7 +522,7 @@ export default function ApplicationDetailModal({
                       <select
                         value={uploadDocType}
                         onChange={(e) => setUploadDocType(e.target.value)}
-                        style={{ fontSize: 12 }}
+                        style={{ fontSize: 13 }}
                       >
                         {REQUIRED_DOC_TYPES.map((dt) => (
                           <option key={dt} value={dt}>{dt}</option>
@@ -495,12 +538,16 @@ export default function ApplicationDetailModal({
                         accept=".pdf,.png,.jpg,.jpeg"
                         required
                         onChange={(e) => setUploadFile(e.target.files[0])}
-                        style={{ fontSize: 12, padding: "8px 12px" }}
+                        style={{ fontSize: 12.5, padding: "8px 12px" }}
                       />
                     </label>
                   </div>
 
-                  <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 12 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 14, flexWrap: "wrap", gap: 10 }}>
+                    <div style={{ fontSize: 11.5, color: "#059669", fontWeight: 600, display: "flex", alignItems: "center", gap: 5 }}>
+                      <CheckCircle2 size={14} />
+                      <span>Magic-Byte MIME Signature Verification Enforced</span>
+                    </div>
                     <button type="submit" className="btn primary" disabled={uploading || !uploadFile}>
                       {uploading ? "Verifying & Uploading…" : `Upload ${uploadDocType}`}
                     </button>
@@ -524,7 +571,10 @@ export default function ApplicationDetailModal({
                       {app.documents && app.documents.length > 0 ? (
                         app.documents.map((doc) => (
                           <tr key={doc.id}>
-                            <td><b>{doc.doc_type}</b></td>
+                            <td>
+                              <b>{doc.doc_type}</b>
+                              <span className="sub">MIME Verified</span>
+                            </td>
                             <td>{doc.original_filename}</td>
                             <td><span className="tag success">v{doc.version}</span></td>
                             <td>{roundBytes(doc.file_size)}</td>
@@ -536,7 +586,7 @@ export default function ApplicationDetailModal({
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="btn"
-                                  style={{ textDecoration: "none", fontSize: 11, padding: "6px 10px" }}
+                                  style={{ textDecoration: "none", fontSize: 11.5, padding: "6px 10px" }}
                                 >
                                   <Download size={13} />
                                   <span>Download</span>
@@ -545,7 +595,7 @@ export default function ApplicationDetailModal({
                                   <button
                                     type="button"
                                     className="btn danger"
-                                    style={{ fontSize: 11, padding: "6px 10px" }}
+                                    style={{ fontSize: 11.5, padding: "6px 10px" }}
                                     onClick={() => handleDeleteDoc(doc.id, doc.original_filename)}
                                   >
                                     <Trash2 size={13} />
@@ -574,37 +624,41 @@ export default function ApplicationDetailModal({
               <div>
                 <div
                   style={{
-                    padding: 20,
-                    background: "linear-gradient(135deg, #f0f7ff 0%, #e0edff 100%)",
+                    padding: 22,
+                    background: "linear-gradient(135deg, #090e1c 0%, #111d38 50%, #1e3a8a 100%)",
                     borderRadius: 14,
-                    border: "1px solid #bfdbfe",
-                    marginBottom: 20
+                    color: "white",
+                    marginBottom: 20,
+                    boxShadow: "0 8px 20px -4px rgba(15, 23, 42, 0.25)",
+                    border: "1px solid rgba(255, 255, 255, 0.12)"
                   }}
                 >
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 16 }}>
                     <div>
-                      <div className="eyebrow">PRELIMINARY AUTOMATED CHECKLIST</div>
-                      <h3 style={{ margin: "4px 0", fontSize: 24, fontWeight: 900, fontFamily: "Outfit, sans-serif", color: "#1e3a8a" }}>
+                      <div style={{ fontSize: 11, color: "#93c5fd", fontWeight: 700, letterSpacing: 1.2, textTransform: "uppercase" }}>
+                        PRELIMINARY REGULATORY AUDIT SCORE
+                      </div>
+                      <h3 style={{ margin: "4px 0", fontSize: 28, fontWeight: 900, fontFamily: "Outfit, sans-serif", color: "#ffffff" }}>
                         Compliance Score: {app.compliance.score}%
                       </h3>
-                      <p style={{ fontSize: 12, color: "#334155", margin: 0 }}>
+                      <p style={{ fontSize: 13, color: "#cbd5e1", margin: 0 }}>
                         {app.compliance.verdict}
                       </p>
                     </div>
                     <span
                       className={`status ${app.compliance.risk_level === "Low" ? "green" : app.compliance.risk_level === "Medium" ? "amber" : "red"}`}
-                      style={{ fontSize: 13, padding: "8px 16px" }}
+                      style={{ fontSize: 12.5, padding: "7px 16px", fontWeight: 800 }}
                     >
-                      {app.compliance.risk_level} Risk
+                      {app.compliance.risk_level.toUpperCase()} RISK
                     </span>
                   </div>
 
-                  <div style={{ marginTop: 14, fontSize: 11, color: "#475569", borderTop: "1px solid #bfdbfe", paddingTop: 8 }}>
-                    <b>Regulatory Notice:</b> {app.compliance.disclaimer}
+                  <div style={{ marginTop: 14, fontSize: 11.5, color: "#94a3b8", borderTop: "1px solid rgba(255, 255, 255, 0.12)", paddingTop: 10 }}>
+                    <b>Statutory Notice:</b> {app.compliance.disclaimer}
                   </div>
                 </div>
 
-                <h4 style={{ fontSize: 13, fontWeight: 700, margin: "16px 0 10px" }}>
+                <h4 style={{ fontSize: 14, fontWeight: 700, margin: "16px 0 10px" }}>
                   Actionable Issues ({app.compliance.issues_count})
                 </h4>
 
@@ -615,22 +669,22 @@ export default function ApplicationDetailModal({
                         key={idx}
                         style={{
                           padding: 14,
-                          background: "#fff",
+                          background: "var(--panel-card)",
                           border: "1px solid var(--line)",
                           borderRadius: 10,
                           borderLeft: `4px solid ${issue.severity === "High" ? "#e11d48" : "#d97706"}`
                         }}
                       >
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                          <b style={{ fontSize: 13, color: "#0f172a" }}>{issue.item} ({issue.category})</b>
+                          <b style={{ fontSize: 13, color: "var(--ink)" }}>{issue.item} ({issue.category})</b>
                           <span className={`status ${issue.severity === "High" ? "red" : "amber"}`}>
                             {issue.status}
                           </span>
                         </div>
-                        <div style={{ fontSize: 12, color: "#475569", marginTop: 4 }}>
+                        <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 4 }}>
                           {issue.message}
                         </div>
-                        <div style={{ fontSize: 12, color: "#2563eb", marginTop: 4, fontWeight: 500, display: "flex", alignItems: "center", gap: 6 }}>
+                        <div style={{ fontSize: 12, color: "var(--primary)", marginTop: 4, fontWeight: 500, display: "flex", alignItems: "center", gap: 6 }}>
                           <ArrowRight size={14} />
                           <span><b>Resolution:</b> {issue.resolution}</span>
                         </div>
@@ -638,7 +692,7 @@ export default function ApplicationDetailModal({
                     ))}
                   </div>
                 ) : (
-                  <div className="empty" style={{ background: "#ecfdf5", color: "#065f46", borderRadius: 10, border: "1px solid #a7f3d0" }}>
+                  <div className="empty" style={{ background: "var(--emerald-light)", color: "var(--emerald)", borderRadius: 10, border: "1px solid var(--emerald-border)" }}>
                     ✓ All mandatory documents and application fields satisfy preliminary AICTE scrutiny checklist.
                   </div>
                 )}
@@ -648,7 +702,7 @@ export default function ApplicationDetailModal({
             {/* TAB: HISTORY / AUDIT TRAIL */}
             {activeTab === "history" && (
               <div>
-                <h3 style={{ margin: "0 0 12px", fontSize: 14, fontWeight: 700 }}>Immutable Audit Trail</h3>
+                <h3 style={{ margin: "0 0 12px", fontSize: 14.5, fontWeight: 700, color: "var(--ink)" }}>Immutable Statutory Audit Trail</h3>
                 <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                   {app.history && app.history.length > 0 ? (
                     app.history.map((h) => (
@@ -656,27 +710,27 @@ export default function ApplicationDetailModal({
                         key={h.id}
                         style={{
                           padding: 14,
-                          background: "#fff",
+                          background: "var(--panel-card)",
                           border: "1px solid var(--line)",
                           borderRadius: 10
                         }}
                       >
-                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12 }}>
-                          <b style={{ color: "#0f172a" }}>{h.action}</b>
+                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 12.5 }}>
+                          <b style={{ color: "var(--ink)" }}>{h.action}</b>
                           <span style={{ color: "var(--muted)" }}>{new Date(h.timestamp).toLocaleString()}</span>
                         </div>
                         <div style={{ fontSize: 12, color: "var(--muted)", marginTop: 4 }}>
-                          By: <b>{h.performed_by}</b> ({h.performer_role})
+                          Performed by: <b style={{ color: "var(--ink)" }}>{h.performed_by}</b> ({h.performer_role})
                         </div>
                         {h.comments && (
-                          <div style={{ fontSize: 12, color: "#334155", marginTop: 8, background: "#f8fafc", padding: 10, borderRadius: 8, border: "1px solid var(--line)" }}>
+                          <div style={{ fontSize: 12, color: "var(--ink-secondary)", marginTop: 8, background: "var(--bg-subtle)", padding: 10, borderRadius: 8, border: "1px solid var(--line)" }}>
                             {h.comments}
                           </div>
                         )}
                       </div>
                     ))
                   ) : (
-                    <div className="empty">No audit history records found.</div>
+                    <div className="empty">No audit history records found for this application.</div>
                   )}
                 </div>
               </div>
@@ -687,9 +741,9 @@ export default function ApplicationDetailModal({
               <div>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
                   <div>
-                    <h3 style={{ margin: "0 0 4px", fontSize: 14, fontWeight: 700 }}>AICTE Status Email Dispatch Logs</h3>
-                    <p style={{ fontSize: 12, color: "var(--muted)", margin: 0 }}>
-                      Official status update emails dispatched to <b>{app.contact_email}</b> with complete College Name, ID, Person Name, and scrutiny notes.
+                    <h3 style={{ margin: "0 0 4px", fontSize: 14.5, fontWeight: 700 }}>AICTE Status Notification Dispatch Logs</h3>
+                    <p style={{ fontSize: 12.5, color: "var(--muted)", margin: 0 }}>
+                      Official status update messages dispatched to <b>{app.contact_email}</b> ({app.contact_mobile})
                     </p>
                   </div>
                 </div>
@@ -699,9 +753,9 @@ export default function ApplicationDetailModal({
                     <thead>
                       <tr>
                         <th>NOTIFICATION ID</th>
-                        <th>RECIPIENT EMAIL</th>
+                        <th>RECIPIENT CONTACT</th>
                         <th>TRIGGER EVENT</th>
-                        <th style={{ minWidth: 260 }}>SUBJECT & CONTENT SUMMARY</th>
+                        <th style={{ minWidth: 260 }}>SUBJECT & BODY</th>
                         <th>STATUS</th>
                         <th>SENT AT</th>
                       </tr>
@@ -710,7 +764,7 @@ export default function ApplicationDetailModal({
                       {app.notifications && app.notifications.length > 0 ? (
                         app.notifications.map((n) => (
                           <tr key={n.id}>
-                            <td><span className="app-id">{n.id}</span></td>
+                            <td><span className="app-id">{n.id.slice(0, 10)}…</span></td>
                             <td>
                               <span style={{ fontSize: 12, fontFamily: "monospace", color: "#1d4ed8", fontWeight: 600 }}>
                                 {n.recipient_email || n.recipient_phone || app.contact_email}
@@ -719,11 +773,11 @@ export default function ApplicationDetailModal({
                             <td><b>{n.trigger_event}</b></td>
                             <td style={{ maxWidth: 300, fontSize: 12, lineHeight: 1.4 }}>
                               {n.subject && (
-                                <div style={{ fontWeight: 700, color: "#0f172a", marginBottom: 2 }}>
+                                <div style={{ fontWeight: 700, color: "var(--ink)", marginBottom: 2 }}>
                                   {n.subject}
                                 </div>
                               )}
-                              <div style={{ color: "#475569" }}>
+                              <div style={{ color: "var(--muted)" }}>
                                 {n.message}
                               </div>
                             </td>
@@ -738,7 +792,7 @@ export default function ApplicationDetailModal({
                       ) : (
                         <tr>
                           <td colSpan="6" className="empty">
-                            No email dispatches recorded for this application yet.
+                            No notifications recorded for this application yet.
                           </td>
                         </tr>
                       )}

@@ -13,7 +13,10 @@ import {
   ArrowRight,
   Info,
   UploadCloud,
-  FileText
+  FileText,
+  RotateCcw,
+  Layers,
+  ChevronRight
 } from "lucide-react";
 
 export default function ComplianceView({ onSelectApp }) {
@@ -62,25 +65,41 @@ export default function ComplianceView({ onSelectApp }) {
 
   const comp = selectedApp?.compliance;
 
+  // Circular gauge calculations
+  const radius = 42;
+  const circumference = 2 * Math.PI * radius;
+  const score = comp?.score ?? 0;
+  const strokeDashoffset = circumference - (score / 100) * circumference;
+
+  const getScoreColor = (sc) => {
+    if (sc >= 90) return "#059669";
+    if (sc >= 60) return "#d97706";
+    return "#e11d48";
+  };
+
   return (
-    <div>
+    <div style={{ animation: "fadeIn 0.25s ease" }}>
       <div className="panel" style={{ marginBottom: 24 }}>
+        {/* Panel Header */}
         <div className="panel-head">
           <div>
             <div className="eyebrow">
-              <Sparkles size={14} />
-              <span>Automated Regulatory Intelligence</span>
+              <Sparkles size={13} />
+              <span>AICTE STATUTORY AI INTELLIGENCE & COMPLIANCE ENGINE</span>
             </div>
             <h2>Automated Preliminary Document Compliance</h2>
-            <p>Scans mandatory statutory attachments, institutional IDs, and regulatory completeness.</p>
+            <p>Scans mandatory attachments, institutional criteria, and regulatory checklists before scrutiny convening.</p>
           </div>
           {apps.length > 0 && (
             <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", width: "100%", marginTop: 8 }}>
-              <label style={{ fontSize: 12, fontWeight: 700, color: "#334155" }}>Target Application:</label>
+              <label style={{ fontSize: 12.5, fontWeight: 700, color: "#1e293b", display: "flex", alignItems: "center", gap: 6 }}>
+                <Building2 size={15} color="#2563eb" />
+                <span>Target Application:</span>
+              </label>
               <select
                 value={selectedAppId}
                 onChange={handleSelectChange}
-                style={{ fontSize: 12, padding: "8px 14px", flex: "1 1 200px", minWidth: 0 }}
+                style={{ fontSize: 13, padding: "9px 14px", flex: "1 1 280px", minWidth: 0, fontWeight: 600 }}
               >
                 {apps.map((a) => (
                   <option key={a.id} value={a.id}>
@@ -100,68 +119,116 @@ export default function ComplianceView({ onSelectApp }) {
         )}
 
         {loading ? (
-          <div className="loading">Evaluating statutory compliance criteria…</div>
+          <div className="loading">
+            <Sparkles size={26} style={{ color: "#2563eb", animation: "pulse 1.5s infinite" }} />
+            <span>Evaluating statutory compliance criteria across institutional attachments…</span>
+          </div>
         ) : !selectedApp ? (
           <div className="empty">
             No applications found in the database. Create an application first to evaluate compliance.
           </div>
         ) : comp ? (
           <div>
-            {/* Banner with Score */}
+            {/* Banner with Circular Gauge & Score */}
             <div
               style={{
-                padding: "24px 28px",
-                background: "linear-gradient(135deg, #f0f7ff 0%, #e0edff 100%)",
+                padding: "26px 30px",
+                background: "linear-gradient(135deg, #090e1c 0%, #111d38 50%, #1e3a8a 100%)",
                 borderRadius: 16,
-                border: "1px solid #bfdbfe",
+                color: "white",
                 marginBottom: 24,
-                boxShadow: "0 4px 14px rgba(37, 99, 235, 0.08)"
+                boxShadow: "0 10px 25px -5px rgba(15, 23, 42, 0.25)",
+                border: "1px solid rgba(255, 255, 255, 0.12)",
+                position: "relative",
+                overflow: "hidden"
               }}
             >
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 16 }}>
-                <div>
-                  <div style={{ fontSize: 11, color: "#2563eb", fontWeight: 700, letterSpacing: 1.2 }}>
-                    PRELIMINARY SCRUTINY SCORECARD
-                  </div>
-                  <div style={{ display: "flex", alignItems: "baseline", gap: 12, margin: "8px 0" }}>
-                    <h3 style={{ margin: 0, fontSize: 36, fontWeight: 900, fontFamily: "Outfit, sans-serif", color: "#1e3a8a" }}>
-                      {comp.score}%
-                    </h3>
-                    <span style={{ fontSize: 13, color: "#3b82f6", fontWeight: 600 }}>
-                      Compliance Rating
-                    </span>
-                  </div>
-                  <div style={{ fontSize: 13, color: "#334155", fontWeight: 500 }}>
-                    {comp.verdict}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 24 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 24 }}>
+                  {/* Circular SVG Gauge */}
+                  <div style={{ position: "relative", width: 104, height: 104, display: "grid", placeItems: "center" }}>
+                    <svg width="104" height="104" style={{ transform: "rotate(-90deg)" }}>
+                      <circle
+                        cx="52"
+                        cy="52"
+                        r={radius}
+                        fill="transparent"
+                        stroke="rgba(255,255,255,0.15)"
+                        strokeWidth="10"
+                      />
+                      <circle
+                        cx="52"
+                        cy="52"
+                        r={radius}
+                        fill="transparent"
+                        stroke={getScoreColor(comp.score)}
+                        strokeWidth="10"
+                        strokeDasharray={circumference}
+                        strokeDashoffset={strokeDashoffset}
+                        strokeLinecap="round"
+                        style={{ transition: "stroke-dashoffset 0.8s cubic-bezier(0.16, 1, 0.3, 1)" }}
+                      />
+                    </svg>
+                    <div style={{ position: "absolute", textAlign: "center" }}>
+                      <div style={{ fontSize: 24, fontWeight: 900, fontFamily: "Outfit, sans-serif", color: "#ffffff", lineHeight: 1 }}>
+                        {comp.score}%
+                      </div>
+                      <div style={{ fontSize: 9, fontWeight: 700, color: "#93c5fd", letterSpacing: 0.8, textTransform: "uppercase" }}>
+                        Score
+                      </div>
+                    </div>
                   </div>
 
-                  {comp.score < 100 && (
-                    <button
-                      className="btn primary"
-                      style={{ marginTop: 14, padding: "8px 16px", fontSize: 12 }}
-                      onClick={() => onSelectApp && onSelectApp(selectedAppId, "documents")}
-                    >
-                      <UploadCloud size={15} />
-                      <span>Upload Missing Documents to Reach 100% →</span>
-                    </button>
-                  )}
+                  <div>
+                    <div style={{ fontSize: 11, color: "#93c5fd", fontWeight: 700, letterSpacing: 1.4, textTransform: "uppercase" }}>
+                      PRELIMINARY STATUTORY SCORECARD
+                    </div>
+                    <div style={{ fontSize: 18, fontWeight: 800, color: "#ffffff", fontFamily: "Outfit, sans-serif", margin: "4px 0" }}>
+                      {comp.score === 100 ? "Fully Compliant with AICTE Norms" : "Conditional Compliance — Action Required"}
+                    </div>
+                    <div style={{ fontSize: 13, color: "#cbd5e1", maxWidth: 540 }}>
+                      {comp.verdict}
+                    </div>
+
+                    {comp.score < 100 && (
+                      <button
+                        className="btn primary"
+                        style={{ marginTop: 14, padding: "8px 16px", fontSize: 12 }}
+                        onClick={() => onSelectApp && onSelectApp(selectedAppId, "documents")}
+                      >
+                        <UploadCloud size={15} />
+                        <span>Upload Missing Documents to Reach 100% →</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 <div style={{ textAlign: "right" }}>
                   <span
                     className={`status ${comp.risk_level === "Low" ? "green" : comp.risk_level === "Medium" ? "amber" : "red"}`}
-                    style={{ fontSize: 13, padding: "8px 16px" }}
+                    style={{ fontSize: 12.5, padding: "7px 16px", fontWeight: 800 }}
                   >
-                    {comp.risk_level} Risk Classification
+                    {comp.risk_level.toUpperCase()} REGULATORY RISK
                   </span>
-                  <div style={{ fontSize: 12, color: "#64748b", marginTop: 8, fontWeight: 500 }}>
+                  <div style={{ fontSize: 12, color: "#cbd5e1", marginTop: 8, fontWeight: 500 }}>
                     <b>{comp.documents_present}</b> of <b>{comp.documents_required}</b> statutory documents attached
                   </div>
                 </div>
               </div>
 
-              <div style={{ marginTop: 16, fontSize: 11, color: "#475569", borderTop: "1px solid #bfdbfe", paddingTop: 10, display: "flex", alignItems: "center", gap: 6 }}>
-                <Info size={14} color="#2563eb" />
+              <div
+                style={{
+                  marginTop: 18,
+                  fontSize: 11.5,
+                  color: "#94a3b8",
+                  borderTop: "1px solid rgba(255, 255, 255, 0.12)",
+                  paddingTop: 12,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 8
+                }}
+              >
+                <Info size={14} color="#60a5fa" />
                 <span><b>Statutory Notice:</b> {comp.disclaimer}</span>
               </div>
             </div>
@@ -174,14 +241,14 @@ export default function ComplianceView({ onSelectApp }) {
                   <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                     <FileCheck size={18} color="#2563eb" />
                     <h3 style={{ fontSize: 14, fontWeight: 700, margin: 0 }}>
-                      1. Statutory Documents ({comp.documents_present}/{comp.documents_required})
+                      1. Mandatory Statutory Documents ({comp.documents_present}/{comp.documents_required})
                     </h3>
                   </div>
                   {comp.documents_present < comp.documents_required && (
                     <button
                       className="link"
                       onClick={() => onSelectApp && onSelectApp(selectedAppId, "documents")}
-                      style={{ fontSize: 11 }}
+                      style={{ fontSize: 11.5 }}
                     >
                       <UploadCloud size={13} />
                       <span>Upload Area →</span>
@@ -208,7 +275,7 @@ export default function ComplianceView({ onSelectApp }) {
                           ) : (
                             <XCircle size={16} color="#e11d48" />
                           )}
-                          <span style={{ fontWeight: 700, fontSize: 12, color: "#0f172a" }}>{d.type}</span>
+                          <span style={{ fontWeight: 700, fontSize: 12.5, color: "var(--ink)" }}>{d.type}</span>
                         </div>
 
                         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -228,7 +295,7 @@ export default function ComplianceView({ onSelectApp }) {
                           )}
                         </div>
                       </div>
-                      <div style={{ fontSize: 11, color: "#64748b", marginTop: 6, paddingLeft: 24 }}>
+                      <div style={{ fontSize: 11.5, color: "#64748b", marginTop: 6, paddingLeft: 24 }}>
                         {d.description}
                       </div>
                     </div>
@@ -249,7 +316,7 @@ export default function ComplianceView({ onSelectApp }) {
                     <div
                       key={f.field}
                       style={{
-                        padding: 12,
+                        padding: 13,
                         background: f.resolved ? "#f0fdf4" : "#fffbeb",
                         border: `1px solid ${f.resolved ? "#bbf7d0" : "#fde68a"}`,
                         borderRadius: 10
@@ -262,15 +329,15 @@ export default function ComplianceView({ onSelectApp }) {
                           ) : (
                             <AlertTriangle size={16} color="#d97706" />
                           )}
-                          <span style={{ fontWeight: 700, fontSize: 12, color: "#0f172a" }}>{f.label}</span>
+                          <span style={{ fontWeight: 700, fontSize: 12.5, color: "var(--ink)" }}>{f.label}</span>
                         </div>
                         <span className={`status ${f.resolved ? "green" : "amber"}`}>
                           {f.resolved ? "Valid" : "Needs Review"}
                         </span>
                       </div>
                       {f.value && (
-                        <div style={{ fontSize: 11, color: "#475569", marginTop: 4, paddingLeft: 24 }}>
-                          Value: <b>{f.value}</b>
+                        <div style={{ fontSize: 11.5, color: "var(--muted)", marginTop: 4, paddingLeft: 24 }}>
+                          Value: <b style={{ color: "var(--ink)" }}>{f.value}</b>
                         </div>
                       )}
                     </div>
@@ -284,7 +351,7 @@ export default function ComplianceView({ onSelectApp }) {
               <div className="panel" style={{ marginTop: 24 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 14 }}>
                   <AlertTriangle size={18} color="#e11d48" />
-                  <h3 style={{ fontSize: 14, fontWeight: 700, margin: 0 }}>
+                  <h3 style={{ fontSize: 14, fontWeight: 700, margin: 0, color: "var(--ink)" }}>
                     Actionable Deficiencies & Rectification Steps ({comp.issues.length})
                   </h3>
                 </div>
@@ -294,14 +361,14 @@ export default function ComplianceView({ onSelectApp }) {
                       key={idx}
                       style={{
                         padding: 16,
-                        background: "#fff",
+                        background: "var(--panel-card)",
                         border: "1px solid var(--line)",
                         borderRadius: 12,
                         borderLeft: `4px solid ${issue.severity === "High" ? "#e11d48" : "#d97706"}`
                       }}
                     >
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                        <b style={{ fontSize: 13, color: "#0f172a" }}>{issue.item} ({issue.category})</b>
+                        <b style={{ fontSize: 13, color: "var(--ink)" }}>{issue.item} ({issue.category})</b>
                         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                           <span className={`status ${issue.severity === "High" ? "red" : "amber"}`}>
                             {issue.status}
